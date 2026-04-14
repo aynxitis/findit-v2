@@ -20,6 +20,9 @@
 # production
 /build
 
+# editor
+.vscode/
+
 # misc
 .DS_Store
 *.pem
@@ -32,6 +35,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+*.local
+supabase/.temp/
 
 # vercel
 .vercel
@@ -39,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local-only docs (audits, notes, planning)
+docs/
