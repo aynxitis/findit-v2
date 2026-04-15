@@ -19,10 +19,15 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  applicationName: "FINDit",
 
   title: {
     default: "FINDit — Lost & Found for ESTIN Students",
     template: "%s · FINDit",
+  },
+
+  verification: {
+    google: "Th212iOll8uCeGmml8xe4TN6w6_-s3CjJ6zkJRPevdc",
   },
   description:
     "FINDit is the campus lost & found platform for ESTIN Bejaia students. Browse found items, report what you lost, or post what you found — no campus-wide email spam.",
@@ -100,6 +105,14 @@ const jsonLd = {
   },
 };
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "FINDit",
+  alternateName: "FINDit ESTIN",
+  url: SITE_URL,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -112,7 +125,11 @@ export default function RootLayout({
       data-theme="dark"
     >
       <body className="min-h-screen flex flex-col antialiased">
-        {/* JSON-LD: jsonLd is a hardcoded static object — never include user-supplied data here */}
+        {/* JSON-LD: hardcoded static objects — never include user-supplied data here */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
