@@ -24,6 +24,7 @@ export interface AuthContextValue {
   signingIn: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
+  getToken: () => Promise<string | null>;
   error: AuthError | null;
   clearError: () => void;
 }
@@ -108,17 +109,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       const authUser = session?.user ?? null;
       setUser(authUser);
 
+      // Resolve loading immediately — don't block on the profile fetch.
+      // fetchUserDoc runs in the background; UI updates when it settles.
+      finish();
+
       if (authUser) {
-        await fetchUserDoc(authUser.id);
+        fetchUserDoc(authUser.id);
       } else {
         setUserDoc(null);
       }
-
-      finish();
     });
 
     return () => {
@@ -183,6 +186,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setError(null);
   }, []);
 
+  const getToken = useCallback(async (): Promise<string | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token ?? null;
+  }, [supabase]);
+
   const value = useMemo(
     () => ({
       user,
@@ -191,10 +199,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       signingIn,
       signIn,
       signOut,
+      getToken,
       error,
       clearError,
     }),
-    [user, userDoc, loading, signingIn, signIn, signOut, error, clearError]
+    [user, userDoc, loading, signingIn, signIn, signOut, getToken, error, clearError]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

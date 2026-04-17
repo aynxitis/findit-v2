@@ -14,10 +14,13 @@
 
 
 -- ── Drop existing policies first (idempotent re-runs) ──────────────────────
+-- Also drops dashboard-generated duplicates if present.
 
-DROP POLICY IF EXISTS "item-photos: authenticated read" ON storage.objects;
-DROP POLICY IF EXISTS "item-photos: owner upload"       ON storage.objects;
-DROP POLICY IF EXISTS "item-photos: owner delete"       ON storage.objects;
+DROP POLICY IF EXISTS "item-photos: authenticated read"    ON storage.objects;
+DROP POLICY IF EXISTS "item-photos: owner upload"          ON storage.objects;
+DROP POLICY IF EXISTS "item-photos: owner delete"          ON storage.objects;
+DROP POLICY IF EXISTS "Public can read item photos"        ON storage.objects;
+DROP POLICY IF EXISTS "allow_authenticated_read 13j4whn_0" ON storage.objects;
 
 
 -- ── SELECT (download): any authenticated user can read all photos ───────────

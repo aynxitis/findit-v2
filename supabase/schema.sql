@@ -94,14 +94,17 @@ COMMENT ON TABLE public.notifications IS 'User notifications (e.g., claim alerts
 -- 3. INDEXES
 -- ──────────────────────────────────────────────────────────────────────────────
 
-CREATE INDEX idx_items_type_created   ON public.items (type, created_at DESC);
-CREATE INDEX idx_items_user_id        ON public.items (user_id, created_at DESC);
-CREATE INDEX idx_items_status         ON public.items (status);
-CREATE INDEX idx_items_category       ON public.items (category);
-CREATE INDEX idx_notifications_to_uid ON public.notifications (to_uid, created_at DESC);
-CREATE INDEX idx_notifications_unread ON public.notifications (to_uid) WHERE read = false;
-CREATE INDEX idx_claims_item_id       ON public.claims (item_id);
-CREATE INDEX idx_claims_claimed_by    ON public.claims (claimed_by);
+CREATE INDEX idx_items_type_created          ON public.items (type, created_at DESC);
+CREATE INDEX idx_items_user_id               ON public.items (user_id, created_at DESC);
+CREATE INDEX idx_items_status                ON public.items (status);
+CREATE INDEX idx_items_category              ON public.items (category);
+CREATE INDEX idx_notifications_to_uid        ON public.notifications (to_uid, created_at DESC);
+CREATE INDEX idx_notifications_unread        ON public.notifications (to_uid) WHERE read = false;
+CREATE INDEX idx_notifications_item_id       ON public.notifications (item_id);
+CREATE INDEX idx_notifications_claimer_uid   ON public.notifications (claimer_uid);
+CREATE INDEX idx_claims_item_id              ON public.claims (item_id);
+CREATE INDEX idx_claims_claimed_by           ON public.claims (claimed_by);
+CREATE INDEX idx_claims_poster_uid           ON public.claims (poster_uid);
 
 
 -- ──────────────────────────────────────────────────────────────────────────────
@@ -122,12 +125,12 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Any authenticated user can read any profile
 CREATE POLICY users_select ON public.users
-  FOR SELECT USING (auth.role() = 'authenticated');
+  FOR SELECT USING ((select auth.role()) = 'authenticated');
 
 -- Users can update their own profile (name, photo, bio only)
 CREATE POLICY users_update_own ON public.users
-  FOR UPDATE USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+  FOR UPDATE USING ((select auth.uid()) = id)
+  WITH CHECK ((select auth.uid()) = id);
 
 -- No direct inserts (managed by trigger)
 -- No deletes allowed
@@ -137,23 +140,23 @@ CREATE POLICY users_update_own ON public.users
 
 -- Any authenticated user can read all items
 CREATE POLICY items_select ON public.items
-  FOR SELECT USING (auth.role() = 'authenticated');
+  FOR SELECT USING ((select auth.role()) = 'authenticated');
 
 -- Authenticated user can insert items they own
 CREATE POLICY items_insert ON public.items
   FOR INSERT WITH CHECK (
-    auth.role() = 'authenticated'
-    AND auth.uid() = user_id
+    (select auth.role()) = 'authenticated'
+    AND (select auth.uid()) = user_id
   );
 
 -- Owner can update their own items (description, photo_url, status)
 CREATE POLICY items_update_own ON public.items
-  FOR UPDATE USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  FOR UPDATE USING ((select auth.uid()) = user_id)
+  WITH CHECK ((select auth.uid()) = user_id);
 
 -- Owner can delete their own items
 CREATE POLICY items_delete_own ON public.items
-  FOR DELETE USING (auth.uid() = user_id);
+  FOR DELETE USING ((select auth.uid()) = user_id);
 
 
 -- ── Claims ───────────────────────────────────────────────────────────────────
@@ -161,7 +164,8 @@ CREATE POLICY items_delete_own ON public.items
 -- Claimer or poster can read
 CREATE POLICY claims_select ON public.claims
   FOR SELECT USING (
-    auth.uid() = claimed_by OR auth.uid() = poster_uid
+    (select auth.uid()) = claimed_by
+    OR (select auth.uid()) = poster_uid
   );
 
 -- No direct inserts, updates, or deletes (managed by RPC)
@@ -171,16 +175,16 @@ CREATE POLICY claims_select ON public.claims
 
 -- Recipient can read their own notifications
 CREATE POLICY notifications_select ON public.notifications
-  FOR SELECT USING (auth.uid() = to_uid);
+  FOR SELECT USING ((select auth.uid()) = to_uid);
 
 -- Recipient can update read status
 CREATE POLICY notifications_update ON public.notifications
-  FOR UPDATE USING (auth.uid() = to_uid)
-  WITH CHECK (auth.uid() = to_uid);
+  FOR UPDATE USING ((select auth.uid()) = to_uid)
+  WITH CHECK ((select auth.uid()) = to_uid);
 
 -- Recipient can delete their own notifications
 CREATE POLICY notifications_delete ON public.notifications
-  FOR DELETE USING (auth.uid() = to_uid);
+  FOR DELETE USING ((select auth.uid()) = to_uid);
 
 -- No direct inserts (managed by RPC)
 

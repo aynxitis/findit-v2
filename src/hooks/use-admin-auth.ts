@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
 import { useAuth } from "./use-auth";
 
 interface UseAdminAuthResult {
@@ -12,10 +11,9 @@ interface UseAdminAuthResult {
 }
 
 export function useAdminAuth(): UseAdminAuthResult {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, getToken } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [verifying, setVerifying] = useState(true);
-  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -30,8 +28,8 @@ export function useAdminAuth(): UseAdminAuthResult {
 
     async function verify() {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
+        // Reuse the token already held by auth-provider — no extra getSession() call.
+        const token = await getToken();
         if (!token) {
           if (isCurrent) { setIsAdmin(false); setVerifying(false); }
           return;
@@ -56,12 +54,7 @@ export function useAdminAuth(): UseAdminAuthResult {
 
     verify();
     return () => { isCurrent = false; };
-  }, [user, authLoading, supabase]);
-
-  const getToken = useCallback(async (): Promise<string | null> => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }, [supabase]);
+  }, [user, authLoading, getToken]);
 
   return {
     verified: !verifying,
