@@ -267,8 +267,8 @@ BEGIN
     RETURN jsonb_build_object('success', false, 'error', 'ALREADY_CLAIMED');
   END IF;
 
-  -- 4. Check item not expired (30 days)
-  IF v_item.created_at < now() - interval '30 days' THEN
+  -- 4. Check item not expired (90 days)
+  IF v_item.created_at < now() - interval '90 days' THEN
     RETURN jsonb_build_object('success', false, 'error', 'LISTING_EXPIRED');
   END IF;
 

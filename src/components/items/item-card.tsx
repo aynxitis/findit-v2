@@ -6,7 +6,7 @@ import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constant
 import type { Item } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
 
-const EXPIRY_DAYS = 30;
+const EXPIRY_DAYS = 90;
 
 interface ItemCardProps {
   item: Item;
