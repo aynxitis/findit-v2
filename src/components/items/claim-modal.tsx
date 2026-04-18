@@ -133,19 +133,14 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           </div>
           <div>
             <div className="font-medium">{item.user_name || "ESTIN Student"}</div>
-            {success && item.user_email ? (
+            {item.user_email && (
               <a
                 href={`mailto:${item.user_email}`}
                 className="text-sm text-teal hover:underline"
               >
                 {item.user_email}
               </a>
-            ) : !success && item.user_email ? (
-              <div className="text-sm text-muted">
-                ***@{item.user_email.split("@")[1]}{" "}
-                <span className="text-xs opacity-60">(confirm to reveal)</span>
-              </div>
-            ) : null}
+            )}
           </div>
         </div>
 
