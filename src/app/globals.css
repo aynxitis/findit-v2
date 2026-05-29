@@ -617,16 +617,17 @@ body {
 
 .item-photo-wrapper {
   @apply relative w-full;
-  height: 160px;
+  aspect-ratio: 4 / 3;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .item-photo {
-  @apply object-cover;
+  @apply object-contain;
 }
 
 .item-photo-placeholder {
   @apply w-full flex items-center justify-center text-4xl;
-  height: 120px;
+  aspect-ratio: 4 / 3;
   background: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }

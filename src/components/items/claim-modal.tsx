@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
 import type { Item } from "@/lib/types/item";
@@ -111,27 +112,41 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           </DialogTitle>
           <DialogDescription className="text-muted text-sm">
             {success
-              ? "Contact info has been revealed. Reach out to coordinate!"
-              : isFound
-              ? "Confirm below to reveal the finder's contact info and mark this as claimed."
-              : "Confirm below to reveal the owner's contact info and mark this as claimed."}
+              ? "This item has been marked as resolved. Reach out to coordinate!"
+              : "Confirm below to mark this item as resolved."}
           </DialogDescription>
         </DialogHeader>
 
+        <div
+          className="relative w-full mt-4 rounded-lg overflow-hidden bg-surface border border-border"
+          style={{ aspectRatio: "4/3" }}
+        >
+          {item.photo_url ? (
+            <Image
+              src={item.photo_url}
+              alt={categoryLabel}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 448px"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-6xl">
+              {categoryIcon}
+            </div>
+          )}
+        </div>
+
         <div className="claim-modal-summary mt-4 p-4 rounded-lg bg-surface border border-border">
+          <div className="text-xs uppercase tracking-wide text-muted mb-1">Item info</div>
           <div className="font-medium">
             {categoryIcon} {categoryLabel} · {locationLabel} · {dateStr}
           </div>
           {item.description && (
             <div className="text-sm text-muted mt-1">{item.description}</div>
           )}
-        </div>
 
-        <div className="claim-modal-poster flex items-center gap-3 mt-4 p-4 rounded-lg bg-surface border border-border">
-          <div className="claim-modal-avatar w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
-            {success ? "✓" : "🔒"}
-          </div>
-          <div>
+          <div className="mt-3">
+            <div className="text-xs uppercase tracking-wide text-muted mb-1">Poster info</div>
             <div className="font-medium">{item.user_name || "ESTIN Student"}</div>
             {item.user_email && (
               <a
