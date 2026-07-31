@@ -10,6 +10,16 @@
 export const ITEM_SELECT_COLUMNS =
   "id,type,category,location,zone,where_left,date,description,photo_url,status,user_id,user_name,created_at";
 
+/**
+ * Canonical origin, used for metadata, robots.txt and the sitemap.
+ *
+ * Set NEXT_PUBLIC_SITE_URL in .env.local and in the Vercel project settings.
+ * The literal below is only a last-resort fallback — it was previously copied
+ * into three separate files.
+ */
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://findit-estin.vercel.app";
+
 export const APP_CONFIG = {
   name: "FINDit",
   description: "Campus lost and found platform for ESTIN students",

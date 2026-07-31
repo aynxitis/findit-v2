@@ -84,9 +84,13 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 # Comma-separated list of admin emails (must end in @estin.dz)
 ADMIN_EMAILS=admin1@estin.dz,admin2@estin.dz
 
-# Optional — set to your deployed URL in production
+# Canonical origin — metadata, robots.txt, sitemap. Set to the deployed URL
+# in the Vercel project settings.
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
+
+> `NEXT_PUBLIC_SUPABASE_URL` is read by `next.config.ts` at build time to derive
+> the CSP and `images.remotePatterns`. The build fails fast if it is missing.
 
 > **Where to find these:**
 > - `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` → Supabase Dashboard → Project Settings → API → Project URL and `anon` public key
