@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
@@ -9,6 +9,19 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils/format";
+
+/**
+ * Contact details for the item's poster.
+ *
+ * These come back from claim_item() and are only ever rendered after a
+ * successful claim. The poster's email must not appear anywhere in the modal
+ * before the user confirms — that disclosed every poster's address to anyone
+ * who merely opened the dialog.
+ */
+interface PosterContact {
+  email: string | null;
+  name: string | null;
+}
 
 interface ClaimModalProps {
   item: Item | null;
@@ -21,19 +34,16 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [contact, setContact] = useState<PosterContact | null>(null);
   const supabase = useMemo(() => createClient(), []);
+
+  const success = contact !== null;
 
   useEffect(() => {
     if (open) {
       setLoading(false);
       setError(null);
-      setSuccess(false);
-      if (closeTimerRef.current !== null) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
+      setContact(null);
     }
   }, [open, item?.id]);
 
@@ -63,7 +73,12 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         throw new Error("Failed to claim item. Please try again.");
       }
 
-      const result = data as { success: boolean; error?: string };
+      const result = data as {
+        success: boolean;
+        error?: string;
+        poster_email?: string | null;
+        poster_name?: string | null;
+      };
 
       if (!result.success) {
         const errorMessages: Record<string, string> = {
@@ -71,17 +86,18 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           ALREADY_CLAIMED: "This item has already been claimed.",
           LISTING_EXPIRED: "This listing has expired and can no longer be claimed.",
           SELF_CLAIM: "You can't claim your own item.",
+          RATE_LIMITED: "You've claimed a lot of items in the last hour. Try again later.",
         };
         throw new Error(errorMessages[result.error || ""] || "Failed to claim item.");
       }
 
-      setSuccess(true);
+      // Contact details are disclosed here and nowhere earlier. The modal no
+      // longer auto-closes — the user needs time to read the address.
+      setContact({
+        email: result.poster_email ?? null,
+        name: result.poster_name ?? null,
+      });
       onClaimSuccess?.();
-
-      closeTimerRef.current = setTimeout(() => {
-        setSuccess(false);
-        onOpenChange(false);
-      }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to claim item");
     } finally {
@@ -90,12 +106,8 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
   };
 
   const handleClose = () => {
-    if (closeTimerRef.current !== null) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
     setError(null);
-    setSuccess(false);
+    setContact(null);
     onOpenChange(false);
   };
 
@@ -112,8 +124,8 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           </DialogTitle>
           <DialogDescription className="text-muted text-sm">
             {success
-              ? "This item has been marked as resolved. Reach out to coordinate!"
-              : "Confirm below to mark this item as resolved."}
+              ? "This item has been marked as resolved. Here's how to reach the poster."
+              : "Confirm below to mark this item as resolved. You'll get the poster's contact details straight after."}
           </DialogDescription>
         </DialogHeader>
 
@@ -144,20 +156,28 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           {item.description && (
             <div className="text-sm text-muted mt-1">{item.description}</div>
           )}
+        </div>
 
-          <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-muted mb-1">Poster info</div>
-            <div className="font-medium">{item.user_name || "ESTIN Student"}</div>
-            {item.user_email && (
+        {contact && (
+          <div className="mt-4 p-4 rounded-lg bg-surface border border-teal/40">
+            <div className="text-xs uppercase tracking-wide text-muted mb-1">
+              Contact the poster
+            </div>
+            <div className="font-medium">{contact.name || "ESTIN Student"}</div>
+            {contact.email ? (
               <a
-                href={`mailto:${item.user_email}`}
-                className="text-sm text-teal hover:underline"
+                href={`mailto:${contact.email}`}
+                className="text-sm text-teal hover:underline break-all"
               >
-                {item.user_email}
+                {contact.email}
               </a>
+            ) : (
+              <p className="text-sm text-muted">
+                No contact address on file. They&apos;ve been notified and can reach you.
+              </p>
             )}
           </div>
-        </div>
+        )}
 
         {error && (
           <div className="mt-4 p-3 rounded-lg bg-red/10 border border-red/30 text-red text-sm">
@@ -166,18 +186,18 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         )}
 
         <button
-          onClick={handleConfirm}
-          disabled={loading || success}
+          onClick={success ? handleClose : handleConfirm}
+          disabled={loading}
           className={cn(
             "w-full mt-6 py-3 rounded-full font-display font-bold text-sm transition-all cursor-pointer hover:-translate-y-0.5",
             isFound
               ? "bg-teal text-[#0d0d0d] hover:shadow-lg hover:shadow-teal/30"
               : "bg-red text-white hover:shadow-lg hover:shadow-red/30",
-            (loading || success) && "opacity-50 cursor-not-allowed"
+            loading && "opacity-50 cursor-not-allowed"
           )}
         >
           {success
-            ? "Done! ✓"
+            ? "Done ✓"
             : loading
             ? "Saving..."
             : isFound

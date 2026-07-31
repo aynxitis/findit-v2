@@ -1,6 +1,18 @@
 -- ============================================================================
--- FINDit -- Supabase Schema (Phase 2)
+-- FINDit -- Supabase Schema
 -- Run this in dependency order in the Supabase SQL Editor.
+-- ============================================================================
+--
+-- This file is the truth for a FRESH install. It already folds in every
+-- migration through 006, so a fresh database must NOT then replay
+-- supabase/migrations/ — section 10 records them as applied instead.
+--
+-- Existing databases go the other way: leave this file alone and apply the
+-- numbered files in supabase/migrations/ in order.
+--
+-- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
+--            004-privacy-lockdown, 005-claim-reversibility,
+--            006-schema-migrations.
 -- ============================================================================
 
 
@@ -123,9 +135,11 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- ── Users ────────────────────────────────────────────────────────────────────
 
--- Any authenticated user can read any profile
+-- A user can read only their own profile. Other students' names and emails are
+-- never client-readable; the admin UI reads them server-side with the service
+-- role via /api/admin/data.
 CREATE POLICY users_select ON public.users
-  FOR SELECT USING ((select auth.role()) = 'authenticated');
+  FOR SELECT USING ((select auth.uid()) = id);
 
 -- Users can update their own profile (name, photo, bio only)
 CREATE POLICY users_update_own ON public.users
@@ -157,6 +171,21 @@ CREATE POLICY items_update_own ON public.items
 -- Owner can delete their own items
 CREATE POLICY items_delete_own ON public.items
   FOR DELETE USING ((select auth.uid()) = user_id);
+
+
+-- Column-level lockdown: items.user_email must never reach a browser client.
+-- The table-level SELECT grant is dropped so the per-column grant takes effect.
+-- Clients must therefore select explicit columns (see ITEM_SELECT_COLUMNS in
+-- src/lib/constants/config.ts) — `select('*')` is a permission error.
+-- user_email still reaches the claimer through claim_item() (SECURITY DEFINER)
+-- and the admin UI through the service role; neither uses these grants.
+
+REVOKE SELECT ON public.items FROM anon, authenticated;
+
+GRANT SELECT (
+  id, type, category, location, zone, where_left, date, description,
+  photo_url, status, user_id, user_name, created_at
+) ON public.items TO authenticated;
 
 
 -- ── Claims ───────────────────────────────────────────────────────────────────
@@ -246,11 +275,23 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-  v_item        record;
-  v_category_icon text;
+  v_item           record;
+  v_category_icon  text;
   v_category_label text;
-  v_notif_message text;
+  v_notif_message  text;
+  v_recent_claims  integer;
+  v_max_hourly     constant integer := 5;
 BEGIN
+  -- 0. Rate limit: max 5 claims per hour per user
+  SELECT count(*) INTO v_recent_claims
+  FROM public.claims
+  WHERE claimed_by = p_claimer_id
+    AND created_at > now() - interval '1 hour';
+
+  IF v_recent_claims >= v_max_hourly THEN
+    RETURN jsonb_build_object('success', false, 'error', 'RATE_LIMITED');
+  END IF;
+
   -- 1. Lock the item row
   SELECT * INTO v_item
   FROM public.items
@@ -314,6 +355,80 @@ BEGIN
     'poster_email', v_item.user_email,
     'poster_name', v_item.user_name
   );
+END;
+$$;
+
+
+-- ── Unclaim Item ─────────────────────────────────────────────────────────────
+-- The poster, and only the poster, puts a claimed item back on the board.
+-- Deletes the claim row, notifies the claimer, sets status back to 'open'.
+-- Returns JSON: { success, error? }
+-- Errors: ITEM_NOT_FOUND | NOT_OWNER | NOT_CLAIMED
+
+CREATE OR REPLACE FUNCTION public.unclaim_item(p_item_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_item           record;
+  v_claim          record;
+  v_caller         uuid := (select auth.uid());
+  v_category_icon  text;
+  v_category_label text;
+BEGIN
+  SELECT * INTO v_item
+  FROM public.items
+  WHERE id = p_item_id
+  FOR UPDATE;
+
+  IF v_item IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'ITEM_NOT_FOUND');
+  END IF;
+
+  IF v_caller IS NULL OR v_item.user_id != v_caller THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_OWNER');
+  END IF;
+
+  IF v_item.status != 'claimed' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_CLAIMED');
+  END IF;
+
+  SELECT * INTO v_claim
+  FROM public.claims
+  WHERE item_id = p_item_id
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  IF v_claim IS NOT NULL THEN
+    DELETE FROM public.claims WHERE id = v_claim.id;
+
+    v_category_icon := CASE v_item.category
+      WHEN 'keys' THEN '🔑' WHEN 'card' THEN '🪪' WHEN 'phone' THEN '📱'
+      WHEN 'bag' THEN '🎒' WHEN 'clothing' THEN '👕' WHEN 'electronics' THEN '💻'
+      ELSE '📦'
+    END;
+    v_category_label := CASE v_item.category
+      WHEN 'keys' THEN 'Keys' WHEN 'card' THEN 'Card / ID' WHEN 'phone' THEN 'Phone'
+      WHEN 'bag' THEN 'Bag' WHEN 'clothing' THEN 'Clothing' WHEN 'electronics' THEN 'Electronics'
+      ELSE 'Other'
+    END;
+
+    INSERT INTO public.notifications (to_uid, item_id, item_type, category, message, read)
+    VALUES (
+      v_claim.claimed_by,
+      p_item_id,
+      v_item.type,
+      v_item.category,
+      v_category_icon || ' The poster reopened the ' || v_category_label || ' listing — your claim was cancelled.',
+      false
+    );
+  END IF;
+
+  UPDATE public.items SET status = 'open' WHERE id = p_item_id;
+
+  RETURN jsonb_build_object('success', true);
 END;
 $$;
 
@@ -414,10 +529,12 @@ $$;
 -- These RPCs are user-scoped — they must not be callable without auth.
 
 REVOKE EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.unclaim_item(uuid)                 FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)        FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.get_user_stats(uuid)               FROM anon, public;
 
 GRANT EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text)  TO authenticated;
+GRANT EXECUTE ON FUNCTION public.unclaim_item(uuid)                  TO authenticated;
 GRANT EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)         TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_stats(uuid)                TO authenticated;
 
@@ -431,7 +548,34 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 
 
 -- ──────────────────────────────────────────────────────────────────────────────
--- 9. STORAGE BUCKET
+-- 9. MIGRATION LEDGER
+-- ──────────────────────────────────────────────────────────────────────────────
+-- Everything in supabase/migrations/ is already folded into this file, so a
+-- fresh install records them as applied and skips replaying them.
+
+CREATE TABLE IF NOT EXISTS public.schema_migrations (
+  filename   text        PRIMARY KEY,
+  applied_at timestamptz NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE public.schema_migrations IS
+  'Applied migration filenames, in supabase/migrations/. Server-side only.';
+
+ALTER TABLE public.schema_migrations ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.schema_migrations FROM anon, authenticated;
+
+INSERT INTO public.schema_migrations (filename) VALUES
+  ('001-rpc-permissions.sql'),
+  ('002-performance-fixes.sql'),
+  ('003-expiry-90-days.sql'),
+  ('004-privacy-lockdown.sql'),
+  ('005-claim-reversibility.sql'),
+  ('006-schema-migrations.sql')
+ON CONFLICT (filename) DO NOTHING;
+
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 10. STORAGE BUCKET
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Run these via Supabase dashboard or storage API:
 --

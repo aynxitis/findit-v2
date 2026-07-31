@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { AdminItemModal, type AdminItemSaveData } from "./admin-item-modal";
@@ -23,7 +22,6 @@ const selectCls =
 
 export function AdminItems() {
   const { isAdmin, verifying, getToken } = useAdminAuth();
-  const supabase = useMemo(() => createClient(), []);
 
   const [activeTab, setActiveTab] = useState<"items" | "users">("items");
   const [items, setItems] = useState<Item[]>([]);
@@ -52,12 +50,17 @@ export function AdminItems() {
   async function loadData() {
     setLoading(true);
     try {
-      const [itemsResult, usersResult] = await Promise.all([
-        supabase.from("items").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("users").select("*").limit(200),
-      ]);
-      setItems((itemsResult.data as Item[]) || []);
-      setUsers((usersResult.data as UserType[]) || []);
+      const token = await getToken();
+      if (!token) throw new Error("No session token");
+
+      const res = await fetch("/api/admin/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      const payload = (await res.json()) as { items: Item[]; users: UserType[] };
+      setItems(payload.items || []);
+      setUsers(payload.users || []);
     } catch {
       // load failed
     } finally {

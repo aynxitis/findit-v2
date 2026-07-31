@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CATEGORY_LABELS, LOCATION_LABELS } from "@/lib/constants/labels";
+import { ITEM_SELECT_COLUMNS } from "@/lib/constants/config";
 import type { Item, ItemType } from "@/lib/types/item";
 
 const FETCH_LIMIT = 100;
@@ -45,7 +46,7 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
       try {
         let query = supabase
           .from("items")
-          .select("*")
+          .select(ITEM_SELECT_COLUMNS)
           .order("created_at", { ascending: false })
           .limit(FETCH_LIMIT);
 
@@ -72,7 +73,7 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
           return;
         }
 
-        setItems((data as Item[]) || []);
+        setItems((data as unknown as Item[]) || []);
         setLoading(false);
       } catch {
         if (isCurrent) {
@@ -164,7 +165,7 @@ export function useItem(itemId: string | null) {
     async function fetchItem() {
       const { data, error: fetchError } = await supabase
         .from("items")
-        .select("*")
+        .select(ITEM_SELECT_COLUMNS)
         .eq("id", itemId)
         .single();
 
@@ -174,7 +175,7 @@ export function useItem(itemId: string | null) {
         setError("Item not found");
         setItem(null);
       } else {
-        setItem(data as Item);
+        setItem(data as unknown as Item);
       }
       setLoading(false);
     }

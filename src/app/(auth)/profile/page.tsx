@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [type, setType] = useState<ItemType>("found");
   const [deleteItem, setDeleteItem] = useState<Item | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const [unclaimingId, setUnclaimingId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -55,6 +56,39 @@ export default function ProfilePage() {
       setActionError("Failed to mark as resolved. Please try again.");
     } finally {
       setResolvingId(null);
+    }
+  };
+
+  // Put a claimed item back on the board.
+  // Goes through unclaim_item() rather than a direct update: the RPC also
+  // deletes the claim row and notifies whoever claimed it.
+  const handleUnclaim = async (item: Item) => {
+    setUnclaimingId(item.id);
+    setActionError(null);
+    try {
+      const { data, error } = await supabase.rpc("unclaim_item", {
+        p_item_id: item.id,
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        const messages: Record<string, string> = {
+          ITEM_NOT_FOUND: "This item no longer exists.",
+          NOT_OWNER: "You can only undo claims on your own posts.",
+          NOT_CLAIMED: "This item is already back on the board.",
+        };
+        throw new Error(messages[result.error || ""] || "Failed to undo the claim.");
+      }
+    } catch (err) {
+      setActionError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to undo the claim. Please try again."
+      );
+    } finally {
+      setUnclaimingId(null);
     }
   };
 
@@ -186,8 +220,10 @@ export default function ProfilePage() {
               <ProfileItemCard
                 item={item}
                 onResolve={() => handleResolve(item)}
+                onUnclaim={() => handleUnclaim(item)}
                 onDelete={() => setDeleteItem(item)}
                 resolving={resolvingId === item.id}
+                unclaiming={unclaimingId === item.id}
               />
             </div>
           ))}
