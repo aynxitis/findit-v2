@@ -83,6 +83,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## Known debt
+
+**Claims are one-click, not a request.** Confirming a claim immediately flips
+the item to `claimed`. There is no pending/accept/reject flow, so a stranger
+still takes a listing off the board on a single click. Two guards are in place
+as a stopgap:
+
+- The poster can reverse it from `/profile` ("Undo claim"), which deletes the
+  claim and notifies the claimer (`unclaim_item`).
+- Claims are capped at 5 per hour per user, enforced inside `claim_item`.
+
+A proper pending/accept/reject flow is the correct design and is not yet built.
+
+---
+
 ## Branch Structure
 
 | Branch | Purpose |

@@ -9,15 +9,19 @@ import type { Item } from "@/lib/types/item";
 interface ProfileItemCardProps {
   item: Item;
   onResolve: () => void;
+  onUnclaim: () => void;
   onDelete: () => void;
   resolving?: boolean;
+  unclaiming?: boolean;
 }
 
 export function ProfileItemCard({
   item,
   onResolve,
+  onUnclaim,
   onDelete,
   resolving,
+  unclaiming,
 }: ProfileItemCardProps) {
   const icon = CATEGORY_ICONS[item.category] || "\uD83D\uDCE6";
   const label = CATEGORY_LABELS[item.category] || item.category;
@@ -85,14 +89,19 @@ export function ProfileItemCard({
         <div className="flex gap-2 mt-4">
           <button
             onClick={onDelete}
-            className={cn(
-              "py-2 px-4 rounded-xl bg-red text-white text-sm font-semibold font-display hover:bg-red/80 hover:-translate-y-0.5 cursor-pointer transition-all",
-              isClaimed && "flex-1"
-            )}
+            className="py-2 px-4 rounded-xl bg-red text-white text-sm font-semibold font-display hover:bg-red/80 hover:-translate-y-0.5 cursor-pointer transition-all"
           >
             Delete
           </button>
-          {!isClaimed && (
+          {isClaimed ? (
+            <button
+              onClick={onUnclaim}
+              disabled={unclaiming}
+              className="flex-1 py-2 rounded-xl bg-[var(--background)] border border-[var(--border)] text-sm font-semibold font-display hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
+            >
+              {unclaiming ? "..." : "Undo claim"}
+            </button>
+          ) : (
             <button
               onClick={onResolve}
               disabled={resolving}

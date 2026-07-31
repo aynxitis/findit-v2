@@ -263,11 +263,23 @@ SECURITY DEFINER
 SET search_path = ''
 AS $$
 DECLARE
-  v_item        record;
-  v_category_icon text;
+  v_item           record;
+  v_category_icon  text;
   v_category_label text;
-  v_notif_message text;
+  v_notif_message  text;
+  v_recent_claims  integer;
+  v_max_hourly     constant integer := 5;
 BEGIN
+  -- 0. Rate limit: max 5 claims per hour per user
+  SELECT count(*) INTO v_recent_claims
+  FROM public.claims
+  WHERE claimed_by = p_claimer_id
+    AND created_at > now() - interval '1 hour';
+
+  IF v_recent_claims >= v_max_hourly THEN
+    RETURN jsonb_build_object('success', false, 'error', 'RATE_LIMITED');
+  END IF;
+
   -- 1. Lock the item row
   SELECT * INTO v_item
   FROM public.items
@@ -331,6 +343,80 @@ BEGIN
     'poster_email', v_item.user_email,
     'poster_name', v_item.user_name
   );
+END;
+$$;
+
+
+-- ── Unclaim Item ─────────────────────────────────────────────────────────────
+-- The poster, and only the poster, puts a claimed item back on the board.
+-- Deletes the claim row, notifies the claimer, sets status back to 'open'.
+-- Returns JSON: { success, error? }
+-- Errors: ITEM_NOT_FOUND | NOT_OWNER | NOT_CLAIMED
+
+CREATE OR REPLACE FUNCTION public.unclaim_item(p_item_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_item           record;
+  v_claim          record;
+  v_caller         uuid := (select auth.uid());
+  v_category_icon  text;
+  v_category_label text;
+BEGIN
+  SELECT * INTO v_item
+  FROM public.items
+  WHERE id = p_item_id
+  FOR UPDATE;
+
+  IF v_item IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'ITEM_NOT_FOUND');
+  END IF;
+
+  IF v_caller IS NULL OR v_item.user_id != v_caller THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_OWNER');
+  END IF;
+
+  IF v_item.status != 'claimed' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_CLAIMED');
+  END IF;
+
+  SELECT * INTO v_claim
+  FROM public.claims
+  WHERE item_id = p_item_id
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  IF v_claim IS NOT NULL THEN
+    DELETE FROM public.claims WHERE id = v_claim.id;
+
+    v_category_icon := CASE v_item.category
+      WHEN 'keys' THEN '🔑' WHEN 'card' THEN '🪪' WHEN 'phone' THEN '📱'
+      WHEN 'bag' THEN '🎒' WHEN 'clothing' THEN '👕' WHEN 'electronics' THEN '💻'
+      ELSE '📦'
+    END;
+    v_category_label := CASE v_item.category
+      WHEN 'keys' THEN 'Keys' WHEN 'card' THEN 'Card / ID' WHEN 'phone' THEN 'Phone'
+      WHEN 'bag' THEN 'Bag' WHEN 'clothing' THEN 'Clothing' WHEN 'electronics' THEN 'Electronics'
+      ELSE 'Other'
+    END;
+
+    INSERT INTO public.notifications (to_uid, item_id, item_type, category, message, read)
+    VALUES (
+      v_claim.claimed_by,
+      p_item_id,
+      v_item.type,
+      v_item.category,
+      v_category_icon || ' The poster reopened the ' || v_category_label || ' listing — your claim was cancelled.',
+      false
+    );
+  END IF;
+
+  UPDATE public.items SET status = 'open' WHERE id = p_item_id;
+
+  RETURN jsonb_build_object('success', true);
 END;
 $$;
 
@@ -431,10 +517,12 @@ $$;
 -- These RPCs are user-scoped — they must not be callable without auth.
 
 REVOKE EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text) FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.unclaim_item(uuid)                 FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)        FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.get_user_stats(uuid)               FROM anon, public;
 
 GRANT EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text)  TO authenticated;
+GRANT EXECUTE ON FUNCTION public.unclaim_item(uuid)                  TO authenticated;
 GRANT EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)         TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_stats(uuid)                TO authenticated;
 

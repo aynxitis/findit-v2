@@ -86,6 +86,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           ALREADY_CLAIMED: "This item has already been claimed.",
           LISTING_EXPIRED: "This listing has expired and can no longer be claimed.",
           SELF_CLAIM: "You can't claim your own item.",
+          RATE_LIMITED: "You've claimed a lot of items in the last hour. Try again later.",
         };
         throw new Error(errorMessages[result.error || ""] || "Failed to claim item.");
       }
