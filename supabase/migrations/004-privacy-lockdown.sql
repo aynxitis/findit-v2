@@ -32,8 +32,8 @@ ALTER POLICY users_select ON public.users
 -- ── 2. items: column-level lockdown of user_email ────────────────────────────
 -- A column-level REVOKE has no effect while a table-level SELECT grant exists,
 -- so the table grant is dropped first and the readable columns re-granted
--- individually. anon gets nothing here — public read arrives in P2 via the
--- items_public view.
+-- individually. anon gets nothing, and is not expected to: FINDit is a closed
+-- @estin.dz platform and every read stays behind the auth gate.
 
 REVOKE SELECT ON public.items FROM anon, authenticated;
 
