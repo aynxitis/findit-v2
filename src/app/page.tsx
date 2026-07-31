@@ -4,13 +4,49 @@ import { StatsSection } from "@/components/home/stats-section";
 import { ScrollingStrip } from "@/components/home/scrolling-strip";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
 
-export default function Home() {
+/**
+ * Sign-in failures redirect here with ?error=<code>. Only these codes render;
+ * anything else is ignored, so a crafted link can't put arbitrary text on the
+ * landing page.
+ */
+const AUTH_ERRORS: Record<string, string> = {
+  domain_not_allowed:
+    "FINDit is for ESTIN students. Sign in with your @estin.dz Google account.",
+  auth_callback_error:
+    "Sign-in didn't complete. Please try again.",
+};
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const authError = error ? AUTH_ERRORS[error] : undefined;
+
   return (
     <>
       <BackgroundBlobs />
       <Nav />
 
       <main className="flex-1">
+        {authError && (
+          <div className="relative z-5 max-w-[700px] mx-auto px-6 pt-6">
+            <div
+              className="flex items-center justify-between gap-4 p-4 rounded-xl bg-red/10 border border-red/40"
+              role="alert"
+            >
+              <p className="text-sm text-red font-semibold">{authError}</p>
+              <Link
+                href="/"
+                className="text-xs text-muted hover:text-white transition-colors shrink-0"
+              >
+                Dismiss
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Hero Section */}
         <section className="relative z-5 flex flex-col items-center text-center px-6 py-16 gap-5">
           {/* Live badge */}

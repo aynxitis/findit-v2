@@ -33,12 +33,12 @@ export async function GET(request: Request) {
       // Verify domain
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user?.email && !user.email.endsWith("@estin.dz")) {
-        // Non-estin.dz account — sign out and redirect with error
+      if (user?.email && !user.email.toLowerCase().endsWith("@estin.dz")) {
+        // Non-estin.dz account — sign out and redirect with an error code.
+        // A code, not prose: the homepage maps it to copy, so a crafted link
+        // can't put arbitrary text on the landing page.
         await supabase.auth.signOut();
-        return NextResponse.redirect(
-          `${origin}/?error=Only+@estin.dz+accounts+are+allowed`
-        );
+        return NextResponse.redirect(`${origin}/?error=domain_not_allowed`);
       }
 
       const forwardedHost = request.headers.get("x-forwarded-host");
