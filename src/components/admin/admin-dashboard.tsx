@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect, useCallback } from "react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
 import { formatTimestamp } from "@/lib/utils/format";
@@ -17,7 +16,7 @@ interface Stats {
 }
 
 export function AdminDashboard() {
-  const { isAdmin, verifying } = useAdminAuth();
+  const { isAdmin, verifying, getToken } = useAdminAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
@@ -25,19 +24,21 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  const supabase = useMemo(() => createClient(), []);
-
   const loadData = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      const [itemsResult, usersResult] = await Promise.all([
-        supabase.from("items").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("users").select("*").limit(200),
-      ]);
+      const token = await getToken();
+      if (!token) throw new Error("No session token");
 
-      const itemsData = (itemsResult.data as Item[]) || [];
-      const usersData = (usersResult.data as UserType[]) || [];
+      const res = await fetch("/api/admin/data", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+
+      const payload = (await res.json()) as { items: Item[]; users: UserType[] };
+      const itemsData = payload.items || [];
+      const usersData = payload.users || [];
 
       setItems(itemsData);
       setUsers(usersData);
@@ -53,7 +54,7 @@ export function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [getToken]);
 
   useEffect(() => {
     if (isAdmin) loadData();

@@ -123,9 +123,11 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- ── Users ────────────────────────────────────────────────────────────────────
 
--- Any authenticated user can read any profile
+-- A user can read only their own profile. Other students' names and emails are
+-- never client-readable; the admin UI reads them server-side with the service
+-- role via /api/admin/data.
 CREATE POLICY users_select ON public.users
-  FOR SELECT USING ((select auth.role()) = 'authenticated');
+  FOR SELECT USING ((select auth.uid()) = id);
 
 -- Users can update their own profile (name, photo, bio only)
 CREATE POLICY users_update_own ON public.users
@@ -157,6 +159,21 @@ CREATE POLICY items_update_own ON public.items
 -- Owner can delete their own items
 CREATE POLICY items_delete_own ON public.items
   FOR DELETE USING ((select auth.uid()) = user_id);
+
+
+-- Column-level lockdown: items.user_email must never reach a browser client.
+-- The table-level SELECT grant is dropped so the per-column grant takes effect.
+-- Clients must therefore select explicit columns (see ITEM_SELECT_COLUMNS in
+-- src/lib/constants/config.ts) — `select('*')` is a permission error.
+-- user_email still reaches the claimer through claim_item() (SECURITY DEFINER)
+-- and the admin UI through the service role; neither uses these grants.
+
+REVOKE SELECT ON public.items FROM anon, authenticated;
+
+GRANT SELECT (
+  id, type, category, location, zone, where_left, date, description,
+  photo_url, status, user_id, user_name, created_at
+) ON public.items TO authenticated;
 
 
 -- ── Claims ───────────────────────────────────────────────────────────────────
