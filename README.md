@@ -41,13 +41,33 @@ npm install
 
 ### Database setup
 
-Run these SQL files against your Supabase project (SQL Editor, in order):
+**Fresh database.** Run these two files in the Supabase SQL Editor, in order:
 
-1. `supabase/schema.sql` — tables, enums, RLS policies, triggers, RPCs
+1. `supabase/schema.sql` — tables, enums, RLS policies, grants, triggers, RPCs
 2. `supabase/storage-policies.sql` — `item-photos` bucket policies
-3. `supabase/migrations/001-rpc-permissions.sql` — REVOKE anon, GRANT authenticated
+
+`schema.sql` already folds in every migration through `006`, and records them
+in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
+
+**Existing database.** Leave `schema.sql` alone and apply the numbered files in
+`supabase/migrations/` in order, skipping any already listed in
+`public.schema_migrations`:
+
+| File | What it does |
+|------|--------------|
+| `001-rpc-permissions.sql` | REVOKE anon, GRANT authenticated on the RPCs |
+| `002-performance-fixes.sql` | RLS InitPlan wrapping, missing FK indexes |
+| `003-expiry-90-days.sql` | Item expiry 30 → 90 days |
+| `004-privacy-lockdown.sql` | `users` own-row-only; `items.user_email` unreadable by clients |
+| `005-claim-reversibility.sql` | `unclaim_item()`; 5 claims/hour/user cap |
+| `006-schema-migrations.sql` | Creates the ledger. **Run last.** |
 
 Optional: `supabase/cleanup-expired.sql` (90-day cleanup helper — schedule via `pg_cron` if desired).
+
+> `004` revokes the table-level SELECT grant on `items`, so `select('*')` against
+> that table becomes a permission error. The app selects explicit columns
+> (`ITEM_SELECT_COLUMNS` in `src/lib/constants/config.ts`). Deploy the matching
+> app code alongside it.
 
 ### Environment Variables
 

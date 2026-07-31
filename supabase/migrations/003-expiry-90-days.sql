@@ -1,6 +1,12 @@
 -- ============================================================================
--- Migration 002 — Change item expiry from 30 days to 90 days
+-- Migration 003 — Change item expiry from 30 days to 90 days
 -- Run once in Supabase SQL Editor.
+-- ============================================================================
+--
+-- Numbered 002 originally, colliding with 002-performance-fixes.sql. Renamed
+-- to 003 in P0-5 to match the order the two were actually applied in
+-- production (performance fixes first, then expiry). Superseded by migration
+-- 005, which replaces claim_item again to add the claim rate limit.
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.claim_item(

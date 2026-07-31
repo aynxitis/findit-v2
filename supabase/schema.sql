@@ -1,6 +1,18 @@
 -- ============================================================================
--- FINDit -- Supabase Schema (Phase 2)
+-- FINDit -- Supabase Schema
 -- Run this in dependency order in the Supabase SQL Editor.
+-- ============================================================================
+--
+-- This file is the truth for a FRESH install. It already folds in every
+-- migration through 006, so a fresh database must NOT then replay
+-- supabase/migrations/ — section 10 records them as applied instead.
+--
+-- Existing databases go the other way: leave this file alone and apply the
+-- numbered files in supabase/migrations/ in order.
+--
+-- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
+--            004-privacy-lockdown, 005-claim-reversibility,
+--            006-schema-migrations.
 -- ============================================================================
 
 
@@ -536,7 +548,34 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 
 
 -- ──────────────────────────────────────────────────────────────────────────────
--- 9. STORAGE BUCKET
+-- 9. MIGRATION LEDGER
+-- ──────────────────────────────────────────────────────────────────────────────
+-- Everything in supabase/migrations/ is already folded into this file, so a
+-- fresh install records them as applied and skips replaying them.
+
+CREATE TABLE IF NOT EXISTS public.schema_migrations (
+  filename   text        PRIMARY KEY,
+  applied_at timestamptz NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE public.schema_migrations IS
+  'Applied migration filenames, in supabase/migrations/. Server-side only.';
+
+ALTER TABLE public.schema_migrations ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.schema_migrations FROM anon, authenticated;
+
+INSERT INTO public.schema_migrations (filename) VALUES
+  ('001-rpc-permissions.sql'),
+  ('002-performance-fixes.sql'),
+  ('003-expiry-90-days.sql'),
+  ('004-privacy-lockdown.sql'),
+  ('005-claim-reversibility.sql'),
+  ('006-schema-migrations.sql')
+ON CONFLICT (filename) DO NOTHING;
+
+
+-- ──────────────────────────────────────────────────────────────────────────────
+-- 10. STORAGE BUCKET
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Run these via Supabase dashboard or storage API:
 --
