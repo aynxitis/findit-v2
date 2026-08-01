@@ -3,38 +3,115 @@
 @import "shadcn/tailwind.css";
 
 @theme {
-  --color-yellow: #ffe036;
-  --color-red: #e8003d;
-  --color-teal: #00e5c3;
-  --color-blue: #1a1aff;
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
 }
 
-:root,
+/* ==========================================================================
+   TOKENS — "Claude Azure" base, per plan §2.
+   ==========================================================================
+
+   :root is LIGHT and [data-theme="dark"] is DARK. They are separate, complete
+   sets — every variable defined in one is defined in the other. They used to
+   share a single definition, which is the reason light mode did not exist.
+
+   The seven values fixed by the plan are the dark set: background #111111,
+   card #242526, popover #2e2f30, primary #5795d9, secondary #f5f8fa,
+   accent #15171a, muted #191a1b. Those are locked, not suggestions.
+
+   The plan specifies no light palette, so the light set is derived by
+   inversion. --primary is deliberately the identical azure in both themes:
+   it is the single accent and the found-item marker, and it must be the same
+   colour in a screenshot regardless of the poster's theme. --primary-foreground
+   is dark in both, because #111111 on #5795d9 is 7.1:1 where white would be
+   2.9:1.
+
+   No shadows anywhere. Borders only. Hairlines, square corners.
+   ========================================================================== */
+
+:root {
+  --radius: 2px;
+
+  --background: #ffffff;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #5795d9;
+  --primary-foreground: #111111;
+  --secondary: #15171a;
+  --secondary-foreground: #f5f8fa;
+  --accent: #f5f8fa;
+  --accent-foreground: #111111;
+  --muted: #f2f4f6;
+  --muted-foreground: #5a6068;
+  --border: rgba(0, 0, 0, 0.14);
+  --input: rgba(0, 0, 0, 0.14);
+  --ring: #5795d9;
+  --surface: #f7f8f9;
+
+  /* Foreground as an RGB triplet, so the bespoke component layer can build
+     alpha variants that follow the theme instead of hardcoding white. */
+  --fg-rgb: 17 17 17;
+  --primary-rgb: 87 149 217;
+  --destructive-rgb: 163 58 50;
+
+  /* Not part of the board's status vocabulary — see the one-accent rule.
+     Reserved for genuinely destructive affordances (confirm-delete). */
+  --destructive: #a33a32;
+}
+
 [data-theme="dark"] {
-  --background: #0d0d0d;
-  --foreground: #fafafa;
-  --muted: rgba(255, 255, 255, 0.5);
-  --muted-foreground: rgba(255, 255, 255, 0.5);
-  --border: rgba(255, 255, 255, 0.08);
-  --surface: rgba(255, 255, 255, 0.03);
-  --card: #0d0d0d;
-  --card-foreground: #fafafa;
-  --popover: #0d0d0d;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0d0d0d;
-  --secondary: rgba(255, 255, 255, 0.1);
-  --secondary-foreground: #fafafa;
-  --accent: rgba(255, 255, 255, 0.1);
-  --accent-foreground: #fafafa;
-  --destructive: #e8003d;
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: rgba(255, 255, 255, 0.3);
+  --radius: 2px;
+
+  --background: #111111;
+  --foreground: #f5f8fa;
+  --card: #242526;
+  --card-foreground: #f5f8fa;
+  --popover: #2e2f30;
+  --popover-foreground: #f5f8fa;
+  --primary: #5795d9;
+  --primary-foreground: #111111;
+  --secondary: #f5f8fa;
+  --secondary-foreground: #111111;
+  --accent: #15171a;
+  --accent-foreground: #f5f8fa;
+  --muted: #191a1b;
+  --muted-foreground: #8b9199;
+  --border: rgba(255, 255, 255, 0.14);
+  --input: rgba(255, 255, 255, 0.14);
+  --ring: #5795d9;
+  --surface: #15171a;
+
+  --fg-rgb: 245 248 250;
+  --primary-rgb: 87 149 217;
+  --destructive-rgb: 194 99 91;
+
+  --destructive: #c2635b;
 }
 
 @theme inline {
+  /* ---------------------------------------------------------------------
+     DEPRECATED palette shim — P3 deletes this block.
+
+     `bg-teal`, `text-yellow`, `border-red` and friends are used 144 times
+     across the components. P1-2 is a token swap and is explicitly not allowed
+     to edit components, so the four old names survive as aliases onto the new
+     tokens rather than being deleted, which would have left every one of those
+     144 call sites rendering with no colour at all.
+
+     They are aliases, not colours: `teal` is azure, `yellow` is a grey. The
+     names lie, deliberately and temporarily. P3-1/P3-2 rewrite the components
+     onto the real tokens and remove these four lines.
+
+     Mapped per the one-accent rule: azure is the only saturated colour.
+     --------------------------------------------------------------------- */
+  --color-teal: var(--primary);          /* found / success / primary accent */
+  --color-blue: var(--primary);          /* admin stat tile */
+  --color-yellow: var(--muted-foreground); /* claimed / warning / de-emphasis */
+  --color-red: var(--destructive);       /* lost / destructive / error */
+
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
   --color-ring: var(--ring);
@@ -64,10 +141,9 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Keep only radius from shadcn defaults */
-:root {
-  --radius: 0.625rem;
-}
+/* --radius is defined with the token sets above (2px, per plan §2). The
+   shadcn default of 0.625rem used to be re-declared here, after them, and
+   would silently win on the cascade. */
 
 html {
   scroll-behavior: smooth;
@@ -98,7 +174,10 @@ body {
   textarea:focus-visible,
   select:focus-visible,
   [role="button"]:focus-visible {
-    outline: 2px solid var(--color-yellow);
+    /* --ring, not the yellow shim: that shim now resolves to
+       --muted-foreground, which would make the focus ring a dim grey and
+       effectively invisible. Focus visibility is a P3 acceptance criterion. */
+    outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
 
@@ -187,22 +266,22 @@ body {
   @apply relative z-10 flex items-center justify-between px-4 py-4;
   background: linear-gradient(
     to right,
-    rgba(232, 0, 61, 0.12),
-    rgba(26, 26, 255, 0.08) 50%,
-    rgba(0, 229, 195, 0.05)
+    rgb(var(--destructive-rgb) / 0.12),
+    rgb(var(--primary-rgb) / 0.08) 50%,
+    rgb(var(--primary-rgb) / 0.05)
   );
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / 0.06);
 }
 
 /* ── Footer ── */
 .footer {
   @apply relative z-5 text-center py-8 px-4 text-sm;
-  color: rgba(255, 255, 255, 0.25);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgb(var(--fg-rgb) / 0.25);
+  border-top: 1px solid rgb(var(--fg-rgb) / 0.06);
 }
 
 .footer-link {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgb(var(--fg-rgb) / 0.35);
   transition: color 0.2s;
 }
 
@@ -213,8 +292,8 @@ body {
 /* ── Legal Pages ── */
 .legal-card {
   @apply rounded-xl px-6 py-5;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgb(var(--fg-rgb) / 0.03);
+  border: 1px solid rgb(var(--fg-rgb) / 0.06);
 }
 
 .legal-heading {
@@ -236,7 +315,7 @@ body {
 .btn-primary {
   @apply inline-flex items-center px-4 py-1.5 rounded-full font-display text-sm font-bold cursor-pointer transition-all;
   background: var(--color-yellow);
-  color: #0d0d0d;
+  color: var(--primary-foreground);
   border: 2px solid var(--color-yellow);
   line-height: 1;
   appearance: none;
@@ -247,14 +326,14 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(255, 224, 54, 0.4);
+  box-shadow: 0 6px 24px rgb(var(--fg-rgb) / 0.4);
 }
 
 .btn-ghost {
   @apply inline-flex items-center px-4 py-1.5 rounded-full font-display text-sm font-medium cursor-pointer transition-all;
   background: transparent;
   color: var(--foreground);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgb(var(--fg-rgb) / 0.25);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -262,9 +341,9 @@ body {
 .btn-ghost:hover {
   border-color: var(--color-yellow);
   color: var(--color-yellow);
-  background: rgba(255, 224, 54, 0.07);
+  background: rgb(var(--fg-rgb) / 0.07);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 224, 54, 0.2);
+  box-shadow: 0 6px 20px rgb(var(--fg-rgb) / 0.2);
 }
 
 /* Nav avatar (small, in navbar) */
@@ -295,16 +374,16 @@ body {
 }
 
 .avatar-bg {
-  fill: rgba(255, 255, 255, 0.08);
+  fill: rgb(var(--fg-rgb) / 0.08);
 }
 
 .avatar-icon {
-  fill: rgba(255, 255, 255, 0.3);
+  fill: rgb(var(--fg-rgb) / 0.3);
 }
 
 /* ── Text colors ── */
 .text-muted {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(var(--fg-rgb) / 0.5);
 }
 
 /* ── 404 Page ── */
@@ -316,12 +395,12 @@ body {
   line-height: 1;
   background: linear-gradient(
     90deg,
-    #fafafa 0%,
-    #fafafa 30%,
+    var(--foreground) 0%,
+    var(--foreground) 30%,
     var(--color-red) 30%,
     var(--color-red) 70%,
-    #fafafa 70%,
-    #fafafa 100%
+    var(--foreground) 70%,
+    var(--foreground) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -332,14 +411,14 @@ body {
   width: 40px;
   height: 2px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--fg-rgb) / 0.1);
 }
 
 /* ── Badge ── */
 .badge {
   @apply inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs tracking-wider;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgb(var(--fg-rgb) / 0.08);
+  border: 1px solid rgb(var(--fg-rgb) / 0.15);
   color: var(--color-teal);
 }
 
@@ -394,21 +473,21 @@ body {
 
 .action-card-lost {
   @apply bg-red text-white;
-  box-shadow: 0 8px 40px rgba(232, 0, 61, 0.45);
+  box-shadow: 0 8px 40px rgb(var(--destructive-rgb) / 0.45);
 }
 
 .action-card-lost:hover {
-  box-shadow: 0 16px 50px rgba(232, 0, 61, 0.6);
+  box-shadow: 0 16px 50px rgb(var(--destructive-rgb) / 0.6);
 }
 
 .action-card-found {
   @apply bg-teal;
-  color: #0d0d0d;
-  box-shadow: 0 8px 40px rgba(0, 229, 195, 0.25);
+  color: var(--primary-foreground);
+  box-shadow: 0 8px 40px rgb(var(--primary-rgb) / 0.25);
 }
 
 .action-card-found:hover {
-  box-shadow: 0 16px 50px rgba(0, 229, 195, 0.45);
+  box-shadow: 0 16px 50px rgb(var(--primary-rgb) / 0.45);
 }
 
 .action-card-arrow {
@@ -422,8 +501,8 @@ body {
 /* ── Browse Button ── */
 .btn-browse {
   @apply px-6 py-2.5 rounded-full font-display font-medium text-[0.95rem] cursor-pointer transition-all;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgb(var(--fg-rgb) / 0.08);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.2);
   color: var(--foreground);
   text-decoration: none;
 }
@@ -431,38 +510,38 @@ body {
 .btn-browse:hover {
   border-color: var(--color-yellow);
   color: var(--color-yellow);
-  background: rgba(255, 224, 54, 0.07);
+  background: rgb(var(--fg-rgb) / 0.07);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255, 224, 54, 0.2);
+  box-shadow: 0 6px 20px rgb(var(--fg-rgb) / 0.2);
 }
 
 /* ── Made By Section ── */
 .madeby-card {
   @apply flex items-center justify-between flex-wrap gap-8 rounded-3xl p-10;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgb(var(--fg-rgb) / 0.04);
+  border: 1px solid rgb(var(--fg-rgb) / 0.09);
 }
 
 .social-link {
   @apply flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium font-display transition-all whitespace-nowrap;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.12);
+  background: rgb(var(--fg-rgb) / 0.05);
+  color: rgb(var(--fg-rgb) / 0.6);
   text-decoration: none;
 }
 
 .social-link:hover {
   border-color: var(--color-yellow);
   color: var(--color-yellow);
-  background: rgba(255, 224, 54, 0.07);
+  background: rgb(var(--fg-rgb) / 0.07);
   transform: translateY(-2px);
 }
 
 /* ── Scrolling Strip ── */
 .strip-wrapper {
   @apply relative z-5 w-full overflow-hidden py-4;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgb(var(--fg-rgb) / 0.08);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / 0.08);
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -490,7 +569,7 @@ body {
 
 .strip-item {
   @apply flex items-center gap-2.5 px-8 font-display text-xs font-bold tracking-wider uppercase whitespace-nowrap;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgb(var(--fg-rgb) / 0.35);
 }
 
 .strip-dot {
@@ -510,19 +589,19 @@ body {
 .toggle-btn {
   @apply px-4 py-2 rounded-full font-display text-xs font-bold cursor-pointer transition-all whitespace-nowrap;
   background: transparent;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgb(var(--fg-rgb) / 0.45);
   border: none;
 }
 
 .toggle-btn:hover:not(.active-found):not(.active-lost) {
   color: var(--foreground);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgb(var(--fg-rgb) / 0.06);
   transform: translateY(-1px);
 }
 
 .toggle-btn.active-found {
   background: var(--color-teal);
-  color: #0d0d0d;
+  color: var(--primary-foreground);
 }
 
 .toggle-btn.active-lost {
@@ -533,8 +612,8 @@ body {
 /* ── Filters ── */
 .filters {
   @apply flex flex-col gap-4 p-5 rounded-2xl mb-6;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgb(var(--fg-rgb) / 0.03);
+  border: 1px solid rgb(var(--fg-rgb) / 0.07);
 }
 
 .filter-row {
@@ -543,7 +622,7 @@ body {
 
 .filter-label {
   @apply font-display text-[0.68rem] font-bold tracking-wider uppercase min-w-15 flex-shrink-0;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(var(--fg-rgb) / 0.3);
 }
 
 .chip-row {
@@ -552,13 +631,13 @@ body {
 
 .chip {
   @apply px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all whitespace-nowrap;
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.1);
   background: transparent;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgb(var(--fg-rgb) / 0.45);
 }
 
 .chip:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgb(var(--fg-rgb) / 0.3);
   color: var(--foreground);
   transform: translateY(-1px);
 }
@@ -566,7 +645,7 @@ body {
 .chip.selected-found {
   background: var(--color-teal);
   border-color: var(--color-teal);
-  color: #0d0d0d;
+  color: var(--primary-foreground);
 }
 
 .chip.selected-lost {
@@ -577,7 +656,7 @@ body {
 
 .filter-clear {
   @apply bg-transparent border-none text-xs font-display cursor-pointer transition-colors ml-auto whitespace-nowrap;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgb(var(--fg-rgb) / 0.25);
 }
 
 .filter-clear:hover {
@@ -593,22 +672,22 @@ body {
 /* ── Item Card ── */
 .item-card {
   @apply rounded-2xl overflow-hidden flex flex-col transition-all;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--fg-rgb) / 0.04);
+  border: 1px solid rgb(var(--fg-rgb) / 0.08);
   animation: fade-up 0.4s ease both;
 }
 
 .item-card:hover {
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgb(var(--fg-rgb) / 0.16);
   transform: translateY(-3px);
 }
 
 .item-card.type-found {
-  border-top: 2px solid rgba(0, 229, 195, 0.4);
+  border-top: 2px solid rgb(var(--primary-rgb) / 0.4);
 }
 
 .item-card.type-lost {
-  border-top: 2px solid rgba(232, 0, 61, 0.4);
+  border-top: 2px solid rgb(var(--destructive-rgb) / 0.4);
 }
 
 .item-card.status-claimed {
@@ -618,7 +697,7 @@ body {
 .item-photo-wrapper {
   @apply relative w-full;
   aspect-ratio: 4 / 3;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--fg-rgb) / 0.02);
 }
 
 .item-photo {
@@ -628,8 +707,8 @@ body {
 .item-photo-placeholder {
   @apply w-full flex items-center justify-center text-4xl;
   aspect-ratio: 4 / 3;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgb(var(--fg-rgb) / 0.02);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / 0.05);
 }
 
 .item-body {
@@ -645,28 +724,28 @@ body {
 }
 
 .badge-found {
-  background: rgba(0, 229, 195, 0.12);
+  background: rgb(var(--primary-rgb) / 0.12);
   color: var(--color-teal);
 }
 
 .badge-lost {
-  background: rgba(232, 0, 61, 0.12);
+  background: rgb(var(--destructive-rgb) / 0.12);
   color: var(--color-red);
 }
 
 .badge-claimed {
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.4);
+  background: rgb(var(--fg-rgb) / 0.07);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .badge-expired {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.3);
+  background: rgb(var(--fg-rgb) / 0.05);
+  color: rgb(var(--fg-rgb) / 0.3);
 }
 
 .item-date {
   @apply text-xs font-display;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(var(--fg-rgb) / 0.3);
 }
 
 .item-category {
@@ -675,12 +754,12 @@ body {
 
 .item-location {
   @apply text-xs flex items-center gap-1;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .item-desc {
   @apply text-sm leading-relaxed;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(var(--fg-rgb) / 0.5);
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -690,7 +769,7 @@ body {
 
 .item-poster {
   @apply text-xs mt-1;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgb(var(--fg-rgb) / 0.35);
 }
 
 .item-footer {
@@ -699,33 +778,33 @@ body {
 
 .btn-claim {
   @apply w-full py-2.5 rounded-lg font-display text-sm font-bold cursor-pointer transition-all;
-  border: 1.5px solid rgba(0, 229, 195, 0.3);
-  background: rgba(0, 229, 195, 0.06);
+  border: 1.5px solid rgb(var(--primary-rgb) / 0.3);
+  background: rgb(var(--primary-rgb) / 0.06);
   color: var(--color-teal);
 }
 
 .btn-claim:hover {
-  background: rgba(0, 229, 195, 0.12);
+  background: rgb(var(--primary-rgb) / 0.12);
   border-color: var(--color-teal);
   transform: translateY(-1px);
 }
 
 .btn-claim-lost {
-  border-color: rgba(232, 0, 61, 0.3);
-  background: rgba(232, 0, 61, 0.06);
+  border-color: rgb(var(--destructive-rgb) / 0.3);
+  background: rgb(var(--destructive-rgb) / 0.06);
   color: var(--color-red);
 }
 
 .btn-claim-lost:hover {
-  background: rgba(232, 0, 61, 0.12);
+  background: rgb(var(--destructive-rgb) / 0.12);
   border-color: var(--color-red);
 }
 
 .btn-claimed-disabled {
   @apply w-full py-2.5 rounded-lg font-display text-sm font-medium cursor-not-allowed;
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.08);
   background: transparent;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(var(--fg-rgb) / 0.3);
 }
 
 /* ── Empty & Loading States ── */
@@ -737,7 +816,7 @@ body {
 
 .loading-state {
   @apply text-sm;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .empty-state {
@@ -754,24 +833,24 @@ body {
 
 .empty-state p {
   @apply text-sm max-w-xs;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(var(--fg-rgb) / 0.5);
 }
 
 /* ── Results Count ── */
 .results-count {
   @apply text-sm mb-4;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgb(var(--fg-rgb) / 0.45);
 }
 
 /* ── Claim Modal ── */
 .claim-modal-summary {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--fg-rgb) / 0.03);
+  border: 1px solid rgb(var(--fg-rgb) / 0.08);
 }
 
 .claim-modal-poster {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgb(var(--fg-rgb) / 0.03);
+  border: 1px solid rgb(var(--fg-rgb) / 0.08);
 }
 
 .claim-modal-avatar {
@@ -780,7 +859,7 @@ body {
 
 /* ── Surface utility ── */
 .bg-surface {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgb(var(--fg-rgb) / 0.03);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -790,7 +869,7 @@ body {
 /* ── Page Header ── */
 .page-back {
   @apply inline-flex items-center gap-2 text-sm font-display font-bold tracking-wide mb-10 transition-colors;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .page-back:hover {
@@ -812,17 +891,17 @@ body {
 
 .form-label {
   @apply font-display text-xs font-bold tracking-wider uppercase;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgb(var(--fg-rgb) / 0.6);
 }
 
 .form-label .optional {
   @apply font-normal normal-case tracking-normal text-xs ml-2;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgb(var(--fg-rgb) / 0.25);
 }
 
 .form-sublabel {
   @apply font-display text-[0.7rem] font-bold tracking-wider uppercase mb-1;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgb(var(--fg-rgb) / 0.35);
 }
 
 /* ── Chip Grid ── */
@@ -832,13 +911,13 @@ body {
 
 .chip-form {
   @apply px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all whitespace-nowrap;
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.55);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.12);
+  background: rgb(var(--fg-rgb) / 0.04);
+  color: rgb(var(--fg-rgb) / 0.55);
 }
 
 .chip-form:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgb(var(--fg-rgb) / 0.3);
   color: var(--foreground);
   transform: translateY(-1px);
 }
@@ -846,7 +925,7 @@ body {
 .chip-form.selected-found {
   background: var(--color-teal);
   border-color: var(--color-teal);
-  color: #0d0d0d;
+  color: var(--primary-foreground);
 }
 
 .chip-form.selected-lost {
@@ -858,8 +937,8 @@ body {
 /* ── Date Input ── */
 .date-input {
   @apply w-full max-w-[220px] px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgb(var(--fg-rgb) / 0.05);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.12);
   color: var(--foreground);
   color-scheme: dark;
   appearance: none;
@@ -876,14 +955,14 @@ body {
 /* ── Text Input / Textarea ── */
 .text-input {
   @apply w-full px-4 py-3 rounded-xl text-sm leading-relaxed transition-colors resize-y;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgb(var(--fg-rgb) / 0.05);
+  border: 1.5px solid rgb(var(--fg-rgb) / 0.12);
   color: var(--foreground);
   min-height: 90px;
 }
 
 .text-input::placeholder {
-  color: rgba(255, 255, 255, 0.2);
+  color: rgb(var(--fg-rgb) / 0.2);
 }
 
 .text-input:focus {
@@ -900,19 +979,19 @@ body {
 
 .photo-drop {
   @apply relative flex flex-col items-center gap-2 p-8 rounded-2xl text-center cursor-pointer transition-all;
-  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border: 2px dashed rgb(var(--fg-rgb) / 0.12);
 }
 
 .photo-drop--teal:hover,
 .photo-drop--teal.dragover {
   border-color: var(--color-teal);
-  background: rgba(0, 229, 195, 0.04);
+  background: rgb(var(--primary-rgb) / 0.04);
 }
 
 .photo-drop--red:hover,
 .photo-drop--red.dragover {
   border-color: var(--color-red);
-  background: rgba(232, 0, 61, 0.04);
+  background: rgb(var(--destructive-rgb) / 0.04);
 }
 
 .photo-drop-icon {
@@ -921,7 +1000,7 @@ body {
 
 .photo-drop p {
   @apply text-sm leading-relaxed;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .photo-drop p strong {
@@ -933,7 +1012,7 @@ body {
 
 .photo-drop span {
   @apply text-xs;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgb(var(--fg-rgb) / 0.25);
 }
 
 .photo-preview {
@@ -953,7 +1032,7 @@ body {
   border: none;
 }
 
-.photo-preview-remove--teal:hover { background: var(--color-teal); color: #0d0d0d; }
+.photo-preview-remove--teal:hover { background: var(--color-teal); color: var(--primary-foreground); }
 .photo-preview-remove--red:hover  { background: var(--color-red); }
 
 /* ── Form Notices ── */
@@ -962,13 +1041,13 @@ body {
 }
 
 .form-notice--teal {
-  background: rgba(0, 229, 195, 0.06);
-  border: 1px solid rgba(0, 229, 195, 0.18);
+  background: rgb(var(--primary-rgb) / 0.06);
+  border: 1px solid rgb(var(--primary-rgb) / 0.18);
 }
 
 .form-notice--red {
-  background: rgba(232, 0, 61, 0.07);
-  border: 1px solid rgba(232, 0, 61, 0.2);
+  background: rgb(var(--destructive-rgb) / 0.07);
+  border: 1px solid rgb(var(--destructive-rgb) / 0.2);
 }
 
 .form-notice-icon {
@@ -977,24 +1056,24 @@ body {
 
 .form-notice p {
   @apply text-sm leading-relaxed;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgb(var(--fg-rgb) / 0.55);
 }
 
 .form-notice p strong {
   @apply font-semibold;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgb(var(--fg-rgb) / 0.85);
 }
 
 /* ── Form Divider ── */
 .form-divider {
   @apply h-px;
-  background: rgba(255, 255, 255, 0.07);
+  background: rgb(var(--fg-rgb) / 0.07);
 }
 
 /* ── Field Error ── */
 .field-error {
   @apply text-xs hidden;
-  color: #ff6b6b;
+  color: var(--destructive);
 }
 
 .field-error.visible {
@@ -1008,7 +1087,7 @@ body {
 
 .form-submit-hint {
   @apply text-xs;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(var(--fg-rgb) / 0.3);
 }
 
 .btn-submit {
@@ -1018,7 +1097,7 @@ body {
 
 .btn-submit--teal {
   background: var(--color-teal);
-  color: #0d0d0d;
+  color: var(--primary-foreground);
   border-color: var(--color-teal);
 }
 
@@ -1030,12 +1109,12 @@ body {
 
 .btn-submit--teal:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0, 229, 195, 0.35);
+  box-shadow: 0 8px 28px rgb(var(--primary-rgb) / 0.35);
 }
 
 .btn-submit--red:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(232, 0, 61, 0.4);
+  box-shadow: 0 8px 28px rgb(var(--destructive-rgb) / 0.4);
 }
 
 .btn-submit:disabled {
@@ -1053,13 +1132,13 @@ body {
 }
 
 .success-icon--teal {
-  background: rgba(0, 229, 195, 0.1);
-  border: 2px solid rgba(0, 229, 195, 0.3);
+  background: rgb(var(--primary-rgb) / 0.1);
+  border: 2px solid rgb(var(--primary-rgb) / 0.3);
 }
 
 .success-icon--red {
-  background: rgba(232, 0, 61, 0.12);
-  border: 2px solid rgba(232, 0, 61, 0.3);
+  background: rgb(var(--destructive-rgb) / 0.12);
+  border: 2px solid rgb(var(--destructive-rgb) / 0.3);
 }
 
 .success-screen h2 {
@@ -1068,13 +1147,13 @@ body {
 
 .success-screen p {
   @apply text-sm max-w-xs leading-relaxed;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(var(--fg-rgb) / 0.5);
 }
 
 .success-card {
   @apply w-full max-w-md rounded-2xl p-5 text-left flex flex-col gap-2;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgb(var(--fg-rgb) / 0.04);
+  border: 1px solid rgb(var(--fg-rgb) / 0.09);
 }
 
 .success-card-row {
@@ -1083,7 +1162,7 @@ body {
 
 .success-card-row span:first-child {
   @apply font-display text-xs uppercase tracking-wider font-bold flex-shrink-0;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .success-card-row span:last-child {
@@ -1102,8 +1181,8 @@ body {
 
 .profile-avatar {
   @apply w-20 h-20 rounded-full overflow-hidden flex-shrink-0;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: rgb(var(--fg-rgb) / 0.05);
+  border: 2px solid rgb(var(--fg-rgb) / 0.1);
 }
 
 .profile-avatar img {
@@ -1116,7 +1195,7 @@ body {
 
 .profile-info p {
   @apply text-sm mt-1;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(var(--fg-rgb) / 0.5);
 }
 
 .profile-stats {
@@ -1134,17 +1213,17 @@ body {
 
 .profile-stat-label {
   @apply text-xs uppercase tracking-wider;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
 }
 
 .profile-tabs {
   @apply flex gap-2 mb-6;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / 0.08);
 }
 
 .profile-tab {
   @apply px-4 py-3 font-display text-sm font-bold cursor-pointer transition-colors relative;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgb(var(--fg-rgb) / 0.4);
   background: none;
   border: none;
 }
@@ -1175,25 +1254,25 @@ body {
 }
 
 .btn-resolve {
-  background: rgba(0, 229, 195, 0.1);
-  border-color: rgba(0, 229, 195, 0.3);
+  background: rgb(var(--primary-rgb) / 0.1);
+  border-color: rgb(var(--primary-rgb) / 0.3);
   color: var(--color-teal);
 }
 
 .btn-resolve:hover {
-  background: rgba(0, 229, 195, 0.2);
+  background: rgb(var(--primary-rgb) / 0.2);
   border-color: var(--color-teal);
   transform: translateY(-1px);
 }
 
 .btn-delete {
-  background: rgba(232, 0, 61, 0.08);
-  border-color: rgba(232, 0, 61, 0.25);
+  background: rgb(var(--destructive-rgb) / 0.08);
+  border-color: rgb(var(--destructive-rgb) / 0.25);
   color: var(--color-red);
 }
 
 .btn-delete:hover {
-  background: rgba(232, 0, 61, 0.15);
+  background: rgb(var(--destructive-rgb) / 0.15);
   border-color: var(--color-red);
   transform: translateY(-1px);
 }
@@ -1220,9 +1299,9 @@ body {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.4);
+  background: rgb(var(--fg-rgb) / 0.05);
+  border: 1px solid rgb(var(--fg-rgb) / 0.1);
+  color: rgb(var(--fg-rgb) / 0.4);
   margin-bottom: 0.5rem;
 }
 
@@ -1232,7 +1311,7 @@ body {
 
 .auth-gate-desc {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgb(var(--fg-rgb) / 0.45);
   max-width: 320px;
   line-height: 1.65;
 }
@@ -1245,11 +1324,11 @@ body {
 
 .auth-gate-note {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.25);
+  color: rgb(var(--fg-rgb) / 0.25);
 }
 
 .auth-gate-note strong {
-  color: rgba(255, 255, 255, 0.45);
+  color: rgb(var(--fg-rgb) / 0.45);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
