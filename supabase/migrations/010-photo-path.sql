@@ -45,14 +45,23 @@ STRICT
 SET search_path = ''
 AS $$
 DECLARE
-  bin  bytea := '';
+  bin  bytea := ''::bytea;   -- explicit cast; do not rely on unknown-literal coercion
   tok  text;
 BEGIN
+  -- regexp_matches goes in the FROM clause, not the target list. Both parse,
+  -- but the FROM form is unambiguous and does not depend on set-returning
+  -- functions being allowed in a SELECT list.
   FOR tok IN
-    SELECT (pg_catalog.regexp_matches(input, '(%[0-9a-fA-F]{2}|.)', 'g'))[1]
+    SELECT m[1]
+    FROM pg_catalog.regexp_matches(input, '(%[0-9a-fA-F]{2}|.)', 'g') AS m
   LOOP
     IF pg_catalog.length(tok) = 3 AND pg_catalog.left(tok, 1) = '%' THEN
-      bin := bin || pg_catalog.decode(pg_catalog.substring(tok FROM 2 FOR 2), 'hex');
+      -- Comma form, NOT substring(tok FROM 2 FOR 2). The SQL-standard
+      -- FROM/FOR grammar is only accepted for the bare `substring` keyword;
+      -- schema-qualifying the name forces ordinary function-call syntax, and
+      -- the keyword form then fails to parse. That is what aborted the first
+      -- version of this migration.
+      bin := bin || pg_catalog.decode(pg_catalog.substring(tok, 2, 2), 'hex');
     ELSE
       bin := bin || pg_catalog.convert_to(tok, 'utf8');
     END IF;
@@ -63,7 +72,48 @@ END;
 $$;
 
 
--- ── 3. Backfill ──────────────────────────────────────────────────────────────
+-- ── 3. Self-test — runs BEFORE any data is touched ───────────────────────────
+-- This decoder could not be executed anywhere before shipping: there is no
+-- Postgres in the authoring environment, which is exactly how the first version
+-- reached you with a parse error. So the migration proves itself against known
+-- inputs and aborts loudly if it is wrong, rather than silently writing paths
+-- that sign to a 404.
+--
+-- The two "unnamed" vectors are the real live rows, checked against the actual
+-- storage object names via the storage API.
+
+DO $$
+DECLARE
+  got text;
+BEGIN
+  -- percent-encoded space, both live rows
+  got := public.findit_url_decode('found-items/5a9c36dc-e07c-4092-8611-c866742ff6f2/unnamed%20(1).jpg');
+  IF got <> 'found-items/5a9c36dc-e07c-4092-8611-c866742ff6f2/unnamed (1).jpg' THEN
+    RAISE EXCEPTION 'url_decode self-test 1 failed: got %', got;
+  END IF;
+
+  got := public.findit_url_decode('found-items/5a9c36dc-e07c-4092-8611-c866742ff6f2/unnamed%20(2).png');
+  IF got <> 'found-items/5a9c36dc-e07c-4092-8611-c866742ff6f2/unnamed (2).png' THEN
+    RAISE EXCEPTION 'url_decode self-test 2 failed: got %', got;
+  END IF;
+
+  -- unencoded paths must pass through byte-for-byte (the other seven rows)
+  got := public.findit_url_decode('found-items/abc/1776201588144.jpg');
+  IF got <> 'found-items/abc/1776201588144.jpg' THEN
+    RAISE EXCEPTION 'url_decode self-test 3 failed: got %', got;
+  END IF;
+
+  -- multi-byte UTF-8, in case a future filename carries an accent
+  got := public.findit_url_decode('a%C3%A9b');
+  IF got <> 'aéb' THEN
+    RAISE EXCEPTION 'url_decode self-test 4 failed: got %', got;
+  END IF;
+
+  RAISE NOTICE 'url_decode self-test passed';
+END $$;
+
+
+-- ── 4. Backfill ──────────────────────────────────────────────────────────────
 
 UPDATE public.items
 SET photo_path = public.findit_url_decode(
@@ -80,14 +130,14 @@ WHERE photo_url IS NOT NULL
 DROP FUNCTION IF EXISTS public.findit_url_decode(text);
 
 
--- ── 4. Grant — same trap as migration 009 ────────────────────────────────────
+-- ── 5. Grant — same trap as migration 009 ────────────────────────────────────
 -- 004 revoked the table-level SELECT, so a new column is invisible to clients
 -- until granted individually.
 
 GRANT SELECT (photo_path) ON public.items TO authenticated;
 
 
--- ── 5. Ledger ────────────────────────────────────────────────────────────────
+-- ── 6. Ledger ────────────────────────────────────────────────────────────────
 
 INSERT INTO public.schema_migrations (filename)
 VALUES ('010-photo-path.sql')

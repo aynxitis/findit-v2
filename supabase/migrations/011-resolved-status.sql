@@ -33,8 +33,14 @@
 -- ── 1. Enum value ────────────────────────────────────────────────────────────
 -- Postgres 12+ permits ALTER TYPE ... ADD VALUE inside a transaction block, but
 -- the new value may not be *used* in that same transaction. Nothing below
--- queries it — the literal appears only inside function bodies, which are not
--- evaluated until the function is called.
+-- queries it — the literal appears only inside function bodies, which are
+-- stored as text and not evaluated until the function is called.
+--
+-- IF THIS LINE ERRORS with "unsafe use of new value" or "cannot run inside a
+-- transaction block": run this single statement on its own, then run the rest
+-- of the file. That is the whole remedy — nothing else here depends on
+-- ordering. This is the one construct in the file with no precedent in this
+-- project's migration history, and it could not be executed before shipping.
 
 ALTER TYPE public.item_status ADD VALUE IF NOT EXISTS 'resolved';
 
