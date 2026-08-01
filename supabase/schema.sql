@@ -4,7 +4,7 @@
 -- ============================================================================
 --
 -- This file is the truth for a FRESH install. It already folds in every
--- migration through 011, so a fresh database must NOT then replay
+-- migration through 012, so a fresh database must NOT then replay
 -- supabase/migrations/ — section 10 records them as applied instead.
 --
 -- Existing databases go the other way: leave this file alone and apply the
@@ -14,7 +14,7 @@
 --            004-privacy-lockdown, 005-claim-reversibility,
 --            006-schema-migrations, 007-notification-keys,
 --            008-drop-unused-user-columns, 009-item-ref, 010-photo-path,
---            011-resolved-status.
+--            011-resolved-status, 012-lock-status-column.
 -- ============================================================================
 
 
@@ -188,6 +188,20 @@ REVOKE SELECT ON public.items FROM anon, authenticated;
 GRANT SELECT (
   id, ref, type, category, location, zone, where_left, date, description,
   photo_url, photo_path, status, user_id, user_name, created_at
+) ON public.items TO authenticated;
+
+-- Column-level UPDATE (P2-4). RLS decides which ROWS you may touch and says
+-- nothing about which COLUMNS, so items_update_own alone let an owner set
+-- status directly from the browser and desynchronise it from the claims table.
+-- Every status transition must go through claim_item / resolve_item /
+-- unclaim_item, which are SECURITY DEFINER and unaffected by these grants.
+-- status, ref, user_id, user_name, user_email, created_at and type are all
+-- deliberately absent.
+
+REVOKE UPDATE ON public.items FROM anon, authenticated;
+
+GRANT UPDATE (
+  category, location, zone, where_left, date, description, photo_url, photo_path
 ) ON public.items TO authenticated;
 
 
@@ -583,7 +597,8 @@ INSERT INTO public.schema_migrations (filename) VALUES
   ('008-drop-unused-user-columns.sql'),
   ('009-item-ref.sql'),
   ('010-photo-path.sql'),
-  ('011-resolved-status.sql')
+  ('011-resolved-status.sql'),
+  ('012-lock-status-column.sql')
 ON CONFLICT (filename) DO NOTHING;
 
 
