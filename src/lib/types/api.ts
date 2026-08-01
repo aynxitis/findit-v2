@@ -1,29 +1,15 @@
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-export interface StatsResponse {
-  posted: number;
-  reunions: number;
-}
+/**
+ * Shapes returned by RPCs and route handlers.
+ *
+ * `ApiResponse`, `StatsResponse`, `ClaimResult` and `AdminVerifyResponse` were
+ * removed in P1-4 — all four were exported and never imported anywhere. The
+ * call sites they were meant to describe declare their shapes inline, which is
+ * how they drifted out of use without anyone noticing.
+ */
 
 export interface RateLimitResult {
   allowed: boolean;
   hourly_remaining: number;
   daily_remaining: number;
   reset_in_seconds: number | null;
-}
-
-export interface ClaimResult {
-  success: boolean;
-  error?: string;
-  poster_email?: string;
-  poster_name?: string;
-}
-
-export interface AdminVerifyResponse {
-  isAdmin: boolean;
-  email?: string;
 }

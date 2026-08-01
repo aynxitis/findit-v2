@@ -62,6 +62,7 @@ in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 | `005-claim-reversibility.sql` | `unclaim_item()`; 5 claims/hour/user cap |
 | `006-schema-migrations.sql` | Creates the ledger. Bootstraps it, so it runs after `001`–`005`. |
 | `007-notification-keys.sql` | `claim_item`/`unclaim_item` write notification keys, not English prose |
+| `008-drop-unused-user-columns.sql` | Drops `users.bio` and `users.verified`; replaces `handle_new_user()` first |
 
 Optional: `supabase/cleanup-expired.sql` (90-day cleanup helper — schedule via `pg_cron` if desired).
 

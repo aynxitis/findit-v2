@@ -4,7 +4,7 @@
 -- ============================================================================
 --
 -- This file is the truth for a FRESH install. It already folds in every
--- migration through 007, so a fresh database must NOT then replay
+-- migration through 008, so a fresh database must NOT then replay
 -- supabase/migrations/ — section 10 records them as applied instead.
 --
 -- Existing databases go the other way: leave this file alone and apply the
@@ -12,7 +12,8 @@
 --
 -- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
 --            004-privacy-lockdown, 005-claim-reversibility,
---            006-schema-migrations, 007-notification-keys.
+--            006-schema-migrations, 007-notification-keys,
+--            008-drop-unused-user-columns.
 -- ============================================================================
 
 
@@ -37,9 +38,7 @@ CREATE TABLE public.users (
   name       text        NOT NULL DEFAULT 'Anonymous',
   email      text        NOT NULL,
   photo      text,
-  verified   boolean     NOT NULL DEFAULT true,
   banned     boolean     NOT NULL DEFAULT false,
-  bio        text        CHECK (char_length(bio) <= 300),
   joined_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -141,7 +140,7 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 CREATE POLICY users_select ON public.users
   FOR SELECT USING ((select auth.uid()) = id);
 
--- Users can update their own profile (name, photo, bio only)
+-- Users can update their own profile (name, photo)
 CREATE POLICY users_update_own ON public.users
   FOR UPDATE USING ((select auth.uid()) = id)
   WITH CHECK ((select auth.uid()) = id);
@@ -233,13 +232,12 @@ AS $$
 BEGIN
   -- Only create profile for @estin.dz emails
   IF NEW.email IS NOT NULL AND NEW.email LIKE '%@estin.dz' THEN
-    INSERT INTO public.users (id, name, email, photo, verified, joined_at)
+    INSERT INTO public.users (id, name, email, photo, joined_at)
     VALUES (
       NEW.id,
       COALESCE(NEW.raw_user_meta_data ->> 'full_name', NEW.raw_user_meta_data ->> 'name', 'Anonymous'),
       NEW.email,
       NEW.raw_user_meta_data ->> 'avatar_url',
-      true,
       now()
     )
     ON CONFLICT (id) DO NOTHING;
@@ -537,7 +535,8 @@ INSERT INTO public.schema_migrations (filename) VALUES
   ('004-privacy-lockdown.sql'),
   ('005-claim-reversibility.sql'),
   ('006-schema-migrations.sql'),
-  ('007-notification-keys.sql')
+  ('007-notification-keys.sql'),
+  ('008-drop-unused-user-columns.sql')
 ON CONFLICT (filename) DO NOTHING;
 
 
