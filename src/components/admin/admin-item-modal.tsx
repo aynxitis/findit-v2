@@ -3,11 +3,12 @@
 import { useState, useMemo } from "react";
 import { X } from "lucide-react";
 import {
-  CATEGORIES,
-  ZONES,
+  CATEGORY_OPTIONS,
+  ZONE_OPTIONS,
   WHERE_LEFT_OPTIONS,
   LOCATION_LABELS,
-} from "@/lib/constants/labels";
+  locationSlugsForZone,
+} from "@/lib/taxonomy";
 import type { Item, ItemCategory, ItemLocation, ItemZone, ItemWhereLeft } from "@/lib/types/item";
 
 interface ModalFormState {
@@ -102,11 +103,10 @@ export function AdminItemModal({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const availableLocations = useMemo(() => {
-    if (form.zone === "school") return ["library", "foyer", "td_halls", "tp_halls"];
-    if (form.zone === "residence") return ["restau", "res_foyer"];
-    return Object.keys(LOCATION_LABELS);
-  }, [form.zone]);
+  const availableLocations = useMemo(
+    () => locationSlugsForZone(form.zone),
+    [form.zone]
+  );
 
   function set<K extends keyof ModalFormState>(key: K, value: ModalFormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -194,7 +194,7 @@ export function AdminItemModal({
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Category *</span>
               <select value={form.category} onChange={(e) => set("category", e.target.value as ItemCategory | "")} className={selectCls}>
                 <option value="">Select…</option>
-                {CATEGORIES.map((c) => (
+                {CATEGORY_OPTIONS.map((c) => (
                   <option key={c.value} value={c.value}>{c.label}</option>
                 ))}
               </select>
@@ -217,7 +217,7 @@ export function AdminItemModal({
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Zone</span>
               <select value={form.zone} onChange={(e) => handleZoneChange(e.target.value as ItemZone | "")} className={selectCls}>
                 <option value="">Any / Not sure</option>
-                {ZONES.map((z) => (
+                {ZONE_OPTIONS.map((z) => (
                   <option key={z.value} value={z.value}>{z.label}</option>
                 ))}
               </select>

@@ -1,23 +1,23 @@
-export type ItemType = "found" | "lost";
-export type ItemStatus = "open" | "claimed";
-export type ItemCategory =
-  | "keys"
-  | "card"
-  | "phone"
-  | "bag"
-  | "clothing"
-  | "electronics"
-  | "other";
-export type ItemLocation =
-  | "library"
-  | "foyer"
-  | "td_halls"
-  | "tp_halls"
-  | "restau"
-  | "res_foyer"
-  | "unknown";
-export type ItemZone = "school" | "residence" | "unknown";
-export type ItemWhereLeft = "with_me" | "admin" | "left_there";
+// Taxonomy unions are derived from src/lib/taxonomy.ts, which is the single
+// source. They are re-exported here so the many existing
+// `from "@/lib/types/item"` imports keep working — but they are defined in
+// exactly one place now, and adding a category cannot leave them out of sync.
+export type {
+  ItemType,
+  ItemStatus,
+  ItemCategory,
+  ItemLocation,
+  ItemZone,
+  ItemWhereLeft,
+} from "@/lib/taxonomy";
+
+import type {
+  ItemType,
+  ItemStatus,
+  ItemCategory,
+  ItemZone,
+  ItemWhereLeft,
+} from "@/lib/taxonomy";
 
 export interface Item {
   id: string;

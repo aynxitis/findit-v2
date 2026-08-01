@@ -8,8 +8,8 @@ import {
   CATEGORY_LABELS,
   CATEGORY_ICONS,
   LOCATION_LABELS,
-  CATEGORIES,
-} from "@/lib/constants/labels";
+  CATEGORY_OPTIONS,
+} from "@/lib/taxonomy";
 import { formatTimestamp } from "@/lib/utils/format";
 import type { Item, User as UserType } from "@/lib/types/item";
 import {
@@ -280,7 +280,7 @@ export function AdminItems() {
             </select>
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={selectCls}>
               <option value="">All Categories</option>
-              {CATEGORIES.map((c) => (
+              {CATEGORY_OPTIONS.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>

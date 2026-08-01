@@ -6,7 +6,7 @@ import {
   VALID_CATEGORIES,
   VALID_ZONES,
   VALID_WHERE_LEFT,
-} from "@/lib/constants/labels";
+} from "@/lib/taxonomy";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 

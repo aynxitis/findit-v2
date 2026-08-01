@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { timeAgo } from "@/lib/utils/format";
+import { renderNotification } from "@/lib/notifications";
 import Image from "next/image";
 
 interface NotificationModalProps {
@@ -121,9 +122,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
                       : "bg-yellow/5 border-yellow/20"
                   }`}
                 >
-                  <p className="text-sm">
-                    {notif.message || "Someone interacted with your post."}
-                  </p>
+                  <p className="text-sm">{renderNotification(notif)}</p>
                   {notif.claimer_name && (
                     <p className="text-sm text-[var(--muted)] mt-1">
                       👤 {notif.claimer_name}

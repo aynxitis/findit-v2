@@ -60,7 +60,8 @@ in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 | `003-expiry-90-days.sql` | Item expiry 30 → 90 days |
 | `004-privacy-lockdown.sql` | `users` own-row-only; `items.user_email` unreadable by clients |
 | `005-claim-reversibility.sql` | `unclaim_item()`; 5 claims/hour/user cap |
-| `006-schema-migrations.sql` | Creates the ledger. **Run last.** |
+| `006-schema-migrations.sql` | Creates the ledger. Bootstraps it, so it runs after `001`–`005`. |
+| `007-notification-keys.sql` | `claim_item`/`unclaim_item` write notification keys, not English prose |
 
 Optional: `supabase/cleanup-expired.sql` (90-day cleanup helper — schedule via `pg_cron` if desired).
 

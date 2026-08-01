@@ -4,7 +4,7 @@
 -- ============================================================================
 --
 -- This file is the truth for a FRESH install. It already folds in every
--- migration through 006, so a fresh database must NOT then replay
+-- migration through 007, so a fresh database must NOT then replay
 -- supabase/migrations/ — section 10 records them as applied instead.
 --
 -- Existing databases go the other way: leave this file alone and apply the
@@ -12,7 +12,7 @@
 --
 -- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
 --            004-privacy-lockdown, 005-claim-reversibility,
---            006-schema-migrations.
+--            006-schema-migrations, 007-notification-keys.
 -- ============================================================================
 
 
@@ -276,9 +276,7 @@ SET search_path = ''
 AS $$
 DECLARE
   v_item           record;
-  v_category_icon  text;
-  v_category_label text;
-  v_notif_message  text;
+  v_notif_key      text;
   v_recent_claims  integer;
   v_max_hourly     constant integer := 5;
 BEGIN
@@ -325,25 +323,13 @@ BEGIN
   -- 7. Create notification for poster
   IF v_item.user_id IS NOT NULL AND v_item.user_id != p_claimer_id THEN
     -- Map category to icon + label
-    v_category_icon := CASE v_item.category
-      WHEN 'keys' THEN '🔑' WHEN 'card' THEN '🪪' WHEN 'phone' THEN '📱'
-      WHEN 'bag' THEN '🎒' WHEN 'clothing' THEN '👕' WHEN 'electronics' THEN '💻'
-      ELSE '📦'
-    END;
-    v_category_label := CASE v_item.category
-      WHEN 'keys' THEN 'Keys' WHEN 'card' THEN 'Card / ID' WHEN 'phone' THEN 'Phone'
-      WHEN 'bag' THEN 'Bag' WHEN 'clothing' THEN 'Clothing' WHEN 'electronics' THEN 'Electronics'
-      ELSE 'Other'
-    END;
-
-    IF v_item.type = 'found' THEN
-      v_notif_message := v_category_icon || ' Someone thinks your ' || v_category_label || ' is theirs and wants to claim it.';
-    ELSE
-      v_notif_message := v_category_icon || ' Someone found your ' || v_category_label || ' and reached out!';
-    END IF;
+    -- A key, not prose. The client composes the sentence from category and
+    -- item_type (src/lib/notifications.ts). Keeps user-facing English out of
+    -- the database and the taxonomy in one place.
+    v_notif_key := CASE WHEN v_item.type = 'found' THEN 'claim.found' ELSE 'claim.lost' END;
 
     INSERT INTO public.notifications (to_uid, item_id, item_type, category, message, claimer_name, claimer_uid, claimer_email, read)
-    VALUES (v_item.user_id, p_item_id, v_item.type, v_item.category, v_notif_message, p_claimer_name, p_claimer_id, p_claimer_email, false);
+    VALUES (v_item.user_id, p_item_id, v_item.type, v_item.category, v_notif_key, p_claimer_name, p_claimer_id, p_claimer_email, false);
   END IF;
 
   -- 8. Update item status
@@ -375,8 +361,6 @@ DECLARE
   v_item           record;
   v_claim          record;
   v_caller         uuid := (select auth.uid());
-  v_category_icon  text;
-  v_category_label text;
 BEGIN
   SELECT * INTO v_item
   FROM public.items
@@ -404,26 +388,8 @@ BEGIN
   IF v_claim IS NOT NULL THEN
     DELETE FROM public.claims WHERE id = v_claim.id;
 
-    v_category_icon := CASE v_item.category
-      WHEN 'keys' THEN '🔑' WHEN 'card' THEN '🪪' WHEN 'phone' THEN '📱'
-      WHEN 'bag' THEN '🎒' WHEN 'clothing' THEN '👕' WHEN 'electronics' THEN '💻'
-      ELSE '📦'
-    END;
-    v_category_label := CASE v_item.category
-      WHEN 'keys' THEN 'Keys' WHEN 'card' THEN 'Card / ID' WHEN 'phone' THEN 'Phone'
-      WHEN 'bag' THEN 'Bag' WHEN 'clothing' THEN 'Clothing' WHEN 'electronics' THEN 'Electronics'
-      ELSE 'Other'
-    END;
-
     INSERT INTO public.notifications (to_uid, item_id, item_type, category, message, read)
-    VALUES (
-      v_claim.claimed_by,
-      p_item_id,
-      v_item.type,
-      v_item.category,
-      v_category_icon || ' The poster reopened the ' || v_category_label || ' listing — your claim was cancelled.',
-      false
-    );
+    VALUES (v_claim.claimed_by, p_item_id, v_item.type, v_item.category, 'claim.reopened', false);
   END IF;
 
   UPDATE public.items SET status = 'open' WHERE id = p_item_id;
@@ -570,7 +536,8 @@ INSERT INTO public.schema_migrations (filename) VALUES
   ('003-expiry-90-days.sql'),
   ('004-privacy-lockdown.sql'),
   ('005-claim-reversibility.sql'),
-  ('006-schema-migrations.sql')
+  ('006-schema-migrations.sql'),
+  ('007-notification-keys.sql')
 ON CONFLICT (filename) DO NOTHING;
 
 

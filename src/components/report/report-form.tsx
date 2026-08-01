@@ -8,17 +8,18 @@ import { useAuth } from "@/hooks/use-auth";
 import { checkPostRateLimit } from "@/lib/utils/rate-limit";
 import type { RateLimitResult } from "@/lib/types/api";
 import {
-  CATEGORIES,
-  ZONES,
+  CATEGORY_OPTIONS,
+  ZONE_OPTIONS,
   WHERE_LEFT_OPTIONS,
-  SPOT_OPTIONS,
+  locationsForZone,
+  type ItemZone,
   CATEGORY_LABELS,
   LOCATION_LABELS,
   WHERE_LEFT_LABELS,
   VALID_CATEGORIES,
   VALID_LOCATIONS,
   VALID_WHERE_LEFT,
-} from "@/lib/constants/labels";
+} from "@/lib/taxonomy";
 
 const RATE_LIMIT_TIMEOUT_MS = 15000;
 const PHOTO_UPLOAD_TIMEOUT_MS = 90000;
@@ -371,7 +372,7 @@ export function ReportForm({ type }: ReportFormProps) {
 
   // Spot options based on zone
   const spotOptions = formData.zone && formData.zone !== "unknown"
-    ? SPOT_OPTIONS[formData.zone as keyof typeof SPOT_OPTIONS]
+    ? locationsForZone(formData.zone as ItemZone)
     : [];
 
   if (showSuccess && submittedData) {
@@ -456,7 +457,7 @@ export function ReportForm({ type }: ReportFormProps) {
           {type === "found" ? "What did you find?" : "What did you lose?"}
         </div>
         <div className="chip-grid">
-          {CATEGORIES.map((cat) => (
+          {CATEGORY_OPTIONS.map((cat) => (
             <button
               key={cat.value}
               type="button"
@@ -479,7 +480,7 @@ export function ReportForm({ type }: ReportFormProps) {
           {type === "found" ? "Where did you find it?" : "Where did you lose it?"}
         </div>
         <div className="chip-grid">
-          {ZONES.map((zone) => (
+          {ZONE_OPTIONS.map((zone) => (
             <button
               key={zone.value}
               type="button"

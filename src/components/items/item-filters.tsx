@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
+import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import type { ItemType } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
 

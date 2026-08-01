@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VALID_CATEGORIES, VALID_WHERE_LEFT } from "@/lib/constants/labels";
+import { VALID_CATEGORIES, VALID_WHERE_LEFT } from "@/lib/taxonomy";
 
 export const reportItemSchema = z.object({
   type: z.enum(["found", "lost"]),
