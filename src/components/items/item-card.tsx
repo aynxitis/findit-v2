@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import type { Item } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
+import { formatRef } from "@/lib/utils/format";
 import { t } from "@/lib/strings";
 
 const EXPIRY_DAYS = 90;
@@ -90,7 +91,8 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       <div className="item-body">
         <div className="item-meta">
           <span className={cn("item-type-badge", badgeClass)}>{badgeText}</span>
-          <span className="item-date">{dateStr}</span>
+          <span className="item-ref font-mono">{formatRef(item.ref)}</span>
+          <span className="item-date font-mono">{dateStr}</span>
         </div>
         <div className="item-category">
           {categoryIcon} {categoryLabel}

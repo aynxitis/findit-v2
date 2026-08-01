@@ -28,3 +28,18 @@ export function timeAgo(isoStr: string): string {
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
   return formatTimestamp(isoStr);
 }
+
+/**
+ * Render an item reference as `#0142` — zero-padded to four digits, per §2.
+ *
+ * Four digits is a deliberate ceiling on how long the number stays sayable:
+ * at ~26 items a year it will not reach five for a very long time, and refs
+ * past 9999 simply render wider rather than breaking.
+ *
+ * Always pair with a monospace class. The padding only reads as a reference
+ * number if the digits align.
+ */
+export function formatRef(ref: number | null | undefined): string {
+  if (ref === null || ref === undefined) return "";
+  return `#${String(ref).padStart(4, "0")}`;
+}

@@ -21,6 +21,8 @@ import type {
 
 export interface Item {
   id: string;
+  /** Sequential, human-readable. Backfilled in created_at order by migration 009. */
+  ref?: number;
   type: ItemType;
   category: ItemCategory;
   location: string;

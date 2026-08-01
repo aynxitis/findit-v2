@@ -743,6 +743,14 @@ body {
   color: rgb(var(--fg-rgb) / 0.3);
 }
 
+/* Reference number — mono and dimmed, per §2. P3-3 rebuilds this card; the
+   rule exists so the ref is legible in the meantime. */
+.item-ref {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
 .item-date {
   @apply text-xs font-display;
   color: rgb(var(--fg-rgb) / 0.3);

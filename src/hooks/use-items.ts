@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { CATEGORY_LABELS, LOCATION_LABELS } from "@/lib/taxonomy";
+import { formatRef } from "@/lib/utils/format";
 import { ITEM_SELECT_COLUMNS } from "@/lib/constants/config";
 import type { Item, ItemType } from "@/lib/types/item";
 
@@ -134,6 +135,9 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
     const normalized = searchQuery.toLowerCase();
     return items.filter((item) => {
       const searchable = [
+        // Both forms, so "142" and "#0142" both match.
+        item.ref != null ? String(item.ref) : "",
+        formatRef(item.ref),
         item.category,
         CATEGORY_LABELS[item.category] || "",
         item.location,
