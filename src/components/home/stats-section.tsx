@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { t } from "@/lib/strings";
 
 interface Stats {
   posted: number;
@@ -34,9 +35,9 @@ export function StatsSection() {
 
   return (
     <div className="relative z-5 flex gap-8 justify-center flex-wrap px-6 pt-14 animate-fade-up [animation-delay:550ms]">
-      <Stat value={stats?.posted} label="Items posted so far" />
-      <Stat value={stats?.reunions} label="Successful reunions" />
-      <Stat value="∞" label="Emails saved" />
+      <Stat value={stats?.posted} label={t("home.stats.posted")} />
+      <Stat value={stats?.reunions} label={t("home.stats.reunions")} />
+      <Stat value="∞" label={t("home.stats.emails")} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useItems } from "@/hooks/use-items";
 import { ItemGrid, ItemFilters, ClaimModal } from "@/components/items";
 import type { Item, ItemType } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 
 export default function BrowsePage() {
   const { user } = useAuth();
@@ -110,7 +111,7 @@ export default function BrowsePage() {
         <input
           type="search"
           className="search-input w-full pl-11 pr-10 py-3 rounded-xl bg-surface border border-border text-sm placeholder:text-muted focus:outline-none focus:border-yellow transition-colors"
-          placeholder="Search by category, location, description..."
+          placeholder={t("board.search.placeholder")}
           value={searchInput}
           onChange={(e) => handleSearchChange(e.target.value)}
           aria-label="Search items"
@@ -143,7 +144,7 @@ export default function BrowsePage() {
       {activeType === "found" && (
         <div className="report-banner flex items-center justify-between gap-4 p-4 my-6 rounded-xl bg-red/10 border border-red/30">
           <p className="text-sm">
-            <strong>Don&apos;t see your item?</strong>{" "}Post a lost report and we&apos;ll notify you if something matching shows up.
+            <strong>{t("board.prompt.lead")}</strong>{" "}{t("board.prompt.rest")}
           </p>
           <Link
             href="/report/lost"

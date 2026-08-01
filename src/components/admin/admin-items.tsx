@@ -16,6 +16,7 @@ import {
   Plus, Pencil, Trash2, RefreshCw, ToggleLeft, ToggleRight,
   Ban, CheckCircle,
 } from "lucide-react";
+import { t } from "@/lib/strings";
 
 const selectCls =
   "px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--foreground)] cursor-pointer";
@@ -102,7 +103,7 @@ export function AdminItems() {
     setSaveError(null);
     try {
       const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      if (!token) throw new Error(t("admin.error.notAuthenticated"));
 
       if (editingItem) {
         const res = await fetch(`/api/admin/items/${editingItem.id}`, {
@@ -110,7 +111,7 @@ export function AdminItems() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error("Update failed");
+        if (!res.ok) throw new Error(t("admin.error.update"));
         setItems((prev) =>
           prev.map((i) => (i.id === editingItem.id ? { ...i, ...(data as Partial<Item>) } : i))
         );
@@ -120,13 +121,13 @@ export function AdminItems() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error("Create failed");
+        if (!res.ok) throw new Error(t("admin.error.create"));
         await loadData();
       }
       setModalOpen(false);
       setEditingItem(null);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Save failed");
+      setSaveError(err instanceof Error ? err.message : t("admin.error.save"));
     } finally {
       setSaving(false);
     }
@@ -148,7 +149,7 @@ export function AdminItems() {
         prev.map((i) => (i.id === item.id ? { ...i, status: newStatus } : i))
       );
     } catch {
-      setActionError("Failed to update item status. Please try again.");
+      setActionError(t("admin.error.statusUpdate"));
     } finally {
       setActionLoading(null);
     }
@@ -168,7 +169,7 @@ export function AdminItems() {
       setItems((prev) => prev.filter((i) => i.id !== deleteTarget));
       setDeleteTarget(null);
     } catch {
-      setActionError("Failed to delete item. Please try again.");
+      setActionError(t("admin.error.deleteItem"));
     } finally {
       setDeleteLoading(false);
     }
@@ -189,7 +190,7 @@ export function AdminItems() {
         prev.map((u) => (u.id === userId ? { ...u, banned: !currentlyBanned } : u))
       );
     } catch {
-      setActionError("Failed to update user ban status. Please try again.");
+      setActionError(t("admin.error.banUpdate"));
     } finally {
       setActionLoading(null);
     }
@@ -206,7 +207,7 @@ export function AdminItems() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold text-red mb-4">Access Denied</h1>
+        <h1 className="font-display text-3xl font-bold text-red mb-4">{t("admin.denied.title")}</h1>
         <p className="text-[var(--muted)]">You don&apos;t have permission to access this page.</p>
       </div>
     );
@@ -263,23 +264,23 @@ export function AdminItems() {
           <div className="flex flex-wrap gap-2 mb-5">
             <input
               type="text"
-              placeholder="Search UID, email, description…"
+              placeholder={t("admin.search.items")}
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
               className="flex-1 min-w-44 px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--foreground)]"
             />
             <select value={filterType} onChange={(e) => setFilterType(e.target.value as "" | "found" | "lost")} className={selectCls}>
-              <option value="">All Types</option>
+              <option value="">{t("admin.filter.allTypes")}</option>
               <option value="found">Found</option>
               <option value="lost">Lost</option>
             </select>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "" | "open" | "claimed")} className={selectCls}>
-              <option value="">All Statuses</option>
+              <option value="">{t("admin.filter.allStatuses")}</option>
               <option value="open">Open</option>
               <option value="claimed">Claimed</option>
             </select>
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={selectCls}>
-              <option value="">All Categories</option>
+              <option value="">{t("admin.filter.allCategories")}</option>
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
@@ -375,7 +376,7 @@ export function AdminItems() {
           <div className="flex flex-wrap gap-2 mb-5">
             <input
               type="text"
-              placeholder="Search name, email, UID…"
+              placeholder={t("admin.search.users")}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               className="flex-1 min-w-44 px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--foreground)]"
@@ -459,9 +460,9 @@ export function AdminItems() {
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         onConfirm={handleDeleteItem}
-        title="Delete Item"
-        message="Are you sure you want to permanently delete this item? This cannot be undone."
-        confirmText="Delete"
+        title={t("admin.delete.title")}
+        message={t("admin.delete.message")}
+        confirmText={t("common.delete")}
         variant="danger"
         loading={deleteLoading}
       />

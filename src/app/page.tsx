@@ -3,6 +3,7 @@ import { Nav, Footer, BackgroundBlobs } from "@/components/layout";
 import { StatsSection } from "@/components/home/stats-section";
 import { ScrollingStrip } from "@/components/home/scrolling-strip";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
+import { t } from "@/lib/strings";
 
 /**
  * Sign-in failures redirect here with ?error=<code>. Only these codes render;
@@ -10,10 +11,8 @@ import { ArrowUpRight, Globe, Mail } from "lucide-react";
  * landing page.
  */
 const AUTH_ERRORS: Record<string, string> = {
-  domain_not_allowed:
-    "FINDit is for ESTIN students. Sign in with your @estin.dz Google account.",
-  auth_callback_error:
-    "Sign-in didn't complete. Please try again.",
+  domain_not_allowed: t("auth.error.domain"),
+  auth_callback_error: t("auth.error.callback"),
 };
 
 export default async function Home({

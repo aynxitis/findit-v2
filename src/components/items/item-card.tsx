@@ -5,6 +5,7 @@ import Image from "next/image";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import type { Item } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/strings";
 
 const EXPIRY_DAYS = 90;
 
@@ -41,16 +42,16 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
   let badgeText: string;
   if (isClaimed) {
     badgeClass = "badge-claimed";
-    badgeText = "Claimed";
+    badgeText = t("item.status.claimed");
   } else if (expired) {
     badgeClass = "badge-expired";
-    badgeText = "Expired";
+    badgeText = t("item.status.expired");
   } else if (item.type === "found") {
     badgeClass = "badge-found";
-    badgeText = "Found";
+    badgeText = t("item.status.found");
   } else {
     badgeClass = "badge-lost";
-    badgeText = "Lost";
+    badgeText = t("item.status.lost");
   }
 
   const canClaim = !isClaimed && !isOwnPost && !expired;
@@ -96,7 +97,7 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
         </div>
         <div className="flex items-center justify-between gap-2">
           <div className="item-poster">
-            {"\uD83D\uDC64"} {isOwnPost ? "You" : (item.user_name || "ESTIN Student")}
+            {"\uD83D\uDC64"} {isOwnPost ? t("item.poster.you") : (item.user_name || t("item.poster.anonymous"))}
           </div>
           <div className="item-location">{"\uD83D\uDCCD"} {locationLabel}</div>
         </div>

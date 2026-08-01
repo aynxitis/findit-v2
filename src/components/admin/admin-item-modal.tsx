@@ -10,6 +10,7 @@ import {
   locationSlugsForZone,
 } from "@/lib/taxonomy";
 import type { Item, ItemCategory, ItemLocation, ItemZone, ItemWhereLeft } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 
 interface ModalFormState {
   type: "found" | "lost";
@@ -124,12 +125,12 @@ export function AdminItemModal({
     e.preventDefault();
     setValidationError(null);
 
-    if (!form.user_id.trim()) { setValidationError("User ID is required"); return; }
-    if (!form.category) { setValidationError("Category is required"); return; }
-    if (!form.location) { setValidationError("Location is required"); return; }
-    if (!form.date) { setValidationError("Date is required"); return; }
+    if (!form.user_id.trim()) { setValidationError(t("admin.modal.error.userId")); return; }
+    if (!form.category) { setValidationError(t("admin.modal.error.category")); return; }
+    if (!form.location) { setValidationError(t("admin.modal.error.location")); return; }
+    if (!form.date) { setValidationError(t("admin.modal.error.date")); return; }
     if (form.type === "found" && !form.where_left) {
-      setValidationError("Where left is required for found items");
+      setValidationError(t("admin.modal.error.whereLeft"));
       return;
     }
 
@@ -255,7 +256,7 @@ export function AdminItemModal({
               value={form.description}
               onChange={(e) => set("description", e.target.value.slice(0, 400))}
               rows={3}
-              placeholder="Optional description…"
+              placeholder={t("admin.modal.descriptionPlaceholder")}
               className={`${inputCls} resize-none`}
             />
           </label>
@@ -280,7 +281,7 @@ export function AdminItemModal({
                 type="text"
                 value={form.user_id}
                 onChange={(e) => set("user_id", e.target.value)}
-                placeholder="Supabase User UUID"
+                placeholder={t("admin.modal.userIdHint")}
                 className={`${inputCls} font-mono`}
               />
             </label>
@@ -303,7 +304,7 @@ export function AdminItemModal({
               type="text"
               value={form.user_name}
               onChange={(e) => set("user_name", e.target.value)}
-              placeholder="Display name"
+              placeholder={t("admin.modal.displayName")}
               className={inputCls}
             />
           </label>

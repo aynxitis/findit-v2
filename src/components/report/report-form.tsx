@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { checkPostRateLimit } from "@/lib/utils/rate-limit";
 import type { RateLimitResult } from "@/lib/types/api";
+import { t } from "@/lib/strings";
 import {
   CATEGORY_OPTIONS,
   ZONE_OPTIONS,
@@ -142,12 +143,12 @@ export function ReportForm({ type }: ReportFormProps) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, submit: "Only image files are accepted." }));
+      setErrors((prev) => ({ ...prev, submit: t("form.error.imageOnly") }));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, submit: "Photo must be under 5 MB." }));
+      setErrors((prev) => ({ ...prev, submit: t("form.error.photoSize") }));
       return;
     }
 
@@ -176,7 +177,7 @@ export function ReportForm({ type }: ReportFormProps) {
   };
 
   const getLocationLabel = (): string => {
-    if (formData.zone === "unknown") return "Not sure";
+    if (formData.zone === "unknown") return t("form.label.notSure");
     if (!formData.spot) return "";
     if (formData.spot === "other") return formData.customSpot.trim() || "";
     return LOCATION_LABELS[formData.spot] || formData.spot;
@@ -209,7 +210,7 @@ export function ReportForm({ type }: ReportFormProps) {
     }
 
     if (formData.description.length > 400) {
-      newErrors.submit = "Description must be 400 characters or fewer.";
+      newErrors.submit = t("form.error.descriptionLength");
     }
 
     if (formData.date && formData.date > getToday()) {
@@ -275,7 +276,7 @@ export function ReportForm({ type }: ReportFormProps) {
 
       // Secondary validation
       if (!itemData.category || !itemData.location || (type === "found" && !itemData.where_left)) {
-        setErrors((prev) => ({ ...prev, submit: "Invalid form data. Please refresh and try again." }));
+        setErrors((prev) => ({ ...prev, submit: t("form.error.invalid") }));
         setIsSubmitting(false);
         return;
       }
@@ -304,7 +305,7 @@ export function ReportForm({ type }: ReportFormProps) {
         );
 
         if (uploadResult.error) {
-          throw new Error("Photo upload failed. Please try again.");
+          throw new Error(t("form.error.photoUpload"));
         }
 
         const { data: urlData } = supabase.storage
@@ -326,7 +327,7 @@ export function ReportForm({ type }: ReportFormProps) {
           .insert(cleanData);
 
         if (insertError) {
-          throw new Error("Failed to save item. Please try again.");
+          throw new Error(t("form.error.save"));
         }
       } catch (writeErr) {
         // Cleanup uploaded photo on failure
@@ -356,14 +357,14 @@ export function ReportForm({ type }: ReportFormProps) {
       console.error("Report submission error:", err);
       const message =
         err instanceof Error && err.message.includes("Photo upload timed out")
-          ? "Photo upload is taking too long. Try a smaller image or a better connection."
+          ? t("form.error.photoTimeout")
           : err instanceof Error && err.message.includes("Saving item timed out")
-          ? "Saving your report is taking too long. Please try again."
+          ? t("form.error.saveTimeout")
           : err instanceof Error && err.message.includes("timed out")
-          ? "The server took too long to respond. Please check your connection and try again."
+          ? t("form.error.serverTimeout")
           : err instanceof Error
           ? err.message
-          : "Something went wrong. Please try again.";
+          : t("form.error.generic");
       setErrors((prev) => ({ ...prev, submit: message }));
     } finally {
       setIsSubmitting(false);
@@ -381,40 +382,40 @@ export function ReportForm({ type }: ReportFormProps) {
         <div className={`success-icon ${isTeal ? "success-icon--teal" : "success-icon--red"}`}>
           {"\u2713"}
         </div>
-        <h2>{type === "found" ? "Thank you!" : "Posted!"}</h2>
+        <h2>{type === "found" ? t("form.success.found.title") : t("form.submit.posted")}</h2>
         <p>
           {type === "found"
-            ? "Your found item report is live. If the owner sees it, they'll reach out to claim it."
-            : "Your lost item report is live. We hope someone finds it and reaches out!"}
+            ? t("form.success.found.desc")
+            : t("form.success.lost.desc")}
         </p>
         <div className="success-card">
           <div className="success-card-row">
-            <span>Category</span>
+            <span>{t("form.label.category")}</span>
             <span>{submittedData.category}</span>
           </div>
           <div className="success-card-row">
-            <span>{type === "found" ? "Found at" : "Lost at"}</span>
+            <span>{type === "found" ? t("form.label.foundAt") : t("form.label.lostAt")}</span>
             <span>{submittedData.location}</span>
           </div>
           {type === "found" && submittedData.whereLeft && (
             <div className="success-card-row">
-              <span>Item is</span>
+              <span>{t("form.label.itemIs")}</span>
               <span>{submittedData.whereLeft}</span>
             </div>
           )}
           <div className="success-card-row">
-            <span>Date</span>
+            <span>{t("form.label.date")}</span>
             <span>{submittedData.date}</span>
           </div>
           {submittedData.description && (
             <div className="success-card-row">
-              <span>Details</span>
+              <span>{t("form.label.details")}</span>
               <span>{submittedData.description}</span>
             </div>
           )}
           {submittedData.hasPhoto && (
             <div className="success-card-row">
-              <span>Photo</span>
+              <span>{t("form.label.photo")}</span>
               <span>{"\u2713"} Attached</span>
             </div>
           )}
@@ -454,7 +455,7 @@ export function ReportForm({ type }: ReportFormProps) {
       {/* Category */}
       <div className="form-section" style={{ animationDelay: "0.05s" }}>
         <div className="form-label">
-          {type === "found" ? "What did you find?" : "What did you lose?"}
+          {type === "found" ? t("form.q.what.found") : t("form.q.what.lost")}
         </div>
         <div className="chip-grid">
           {CATEGORY_OPTIONS.map((cat) => (
@@ -477,7 +478,7 @@ export function ReportForm({ type }: ReportFormProps) {
       {/* Location - Zone */}
       <div className="form-section" style={{ animationDelay: "0.1s" }}>
         <div className="form-label">
-          {type === "found" ? "Where did you find it?" : "Where did you lose it?"}
+          {type === "found" ? t("form.q.where.found") : t("form.q.where.lost")}
         </div>
         <div className="chip-grid">
           {ZONE_OPTIONS.map((zone) => (
@@ -514,7 +515,7 @@ export function ReportForm({ type }: ReportFormProps) {
               <input
                 type="text"
                 className={`text-input mt-3 ${isTeal ? "text-input--teal" : "text-input--red"}`}
-                placeholder="Where exactly?"
+                placeholder={t("form.label.whereExactly")}
                 maxLength={80}
                 value={formData.customSpot}
                 onChange={(e) =>
@@ -533,7 +534,7 @@ export function ReportForm({ type }: ReportFormProps) {
       {/* Where Left (found only) */}
       {type === "found" && (
         <div className="form-section" style={{ animationDelay: "0.15s" }}>
-          <div className="form-label">Where is it now?</div>
+          <div className="form-label">{t("form.label.whereNow")}</div>
           <div className="chip-grid">
             {WHERE_LEFT_OPTIONS.map((opt) => (
               <button
@@ -556,7 +557,7 @@ export function ReportForm({ type }: ReportFormProps) {
       {/* Date */}
       <div className="form-section" style={{ animationDelay: "0.2s" }}>
         <div className="form-label">
-          {type === "found" ? "When did you find it?" : "When did you lose it?"}
+          {type === "found" ? t("form.q.when.found") : t("form.q.when.lost")}
         </div>
         <input
           type="date"
@@ -582,7 +583,7 @@ export function ReportForm({ type }: ReportFormProps) {
         </div>
         <textarea
           className={`text-input ${isTeal ? "text-input--teal" : "text-input--red"}`}
-          placeholder="Colour, brand, any details that could help identify it…"
+          placeholder={t("form.placeholder.description")}
           maxLength={400}
           value={formData.description}
           onChange={(e) =>
@@ -666,7 +667,7 @@ export function ReportForm({ type }: ReportFormProps) {
       {/* Submit */}
       <div className="form-submit-row">
         <span className="form-submit-hint">
-          {type === "found" ? "You're doing a good thing." : "We hope you find it!"}
+          {type === "found" ? t("form.success.subtitle") : t("form.success.lost.title")}
         </span>
         <button
           type="submit"
@@ -674,10 +675,10 @@ export function ReportForm({ type }: ReportFormProps) {
           disabled={isSubmitting}
         >
           {isSubmitting
-            ? "Posting…"
+            ? t("form.submit.posting")
             : type === "found"
-            ? "Post found item \u2192"
-            : "Post lost item \u2192"}
+            ? t("form.submit.found")
+            : t("form.submit.lost")}
         </button>
       </div>
 

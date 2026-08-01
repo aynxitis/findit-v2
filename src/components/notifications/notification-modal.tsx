@@ -7,6 +7,7 @@ import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { timeAgo } from "@/lib/utils/format";
 import { renderNotification } from "@/lib/notifications";
 import Image from "next/image";
+import { t } from "@/lib/strings";
 
 interface NotificationModalProps {
   open: boolean;
@@ -69,23 +70,25 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
           </div>
 
           <h2 className="font-display text-xl font-bold text-center">
-            Notifications
+            {t("notifications.title")}
           </h2>
 
           <div className="flex items-center justify-between mt-2">
             <span className="text-sm text-[var(--muted)]">
               {notifications.length === 0
-                ? "No notifications"
+                ? t("notifications.empty")
                 : unreadCount === 0
-                ? `${notifications.length} notification${notifications.length > 1 ? "s" : ""}`
-                : `${unreadCount} unread`}
+                ? notifications.length === 1
+                  ? t("notifications.count.one", { count: notifications.length })
+                  : t("notifications.count.many", { count: notifications.length })
+                : t("notifications.unread", { count: unreadCount })}
             </span>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
                 className="text-sm text-yellow hover:underline cursor-pointer"
               >
-                Mark all read
+                {t("notifications.markAllRead")}
               </button>
             )}
           </div>
@@ -106,9 +109,9 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
             <div className="py-12 text-center">
               <div className="text-4xl mb-4">🔔</div>
               <p className="text-[var(--muted)]">
-                No notifications yet.
+                {t("notifications.empty.title")}
                 <br />
-                They&apos;ll show up here when someone claims your item.
+                {t("notifications.empty.desc")}
               </p>
             </div>
           ) : (

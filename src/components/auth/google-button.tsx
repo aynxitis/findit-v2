@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/strings";
 
 interface GoogleButtonProps {
   onClick: () => void;
@@ -33,12 +34,12 @@ export function GoogleButton({
       {loading ? (
         <>
           <Spinner />
-          <span>Signing in...</span>
+          <span>{t("auth.google.signingIn")}</span>
         </>
       ) : (
         <>
           <GoogleLogo />
-          <span>Continue with Google</span>
+          <span>{t("auth.google.continue")}</span>
         </>
       )}
     </button>

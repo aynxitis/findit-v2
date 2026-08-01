@@ -9,6 +9,7 @@ import { useItems } from "@/hooks/use-items";
 import { ProfileHeader, ProfileItemCard } from "@/components/profile";
 import { ConfirmModal } from "@/components/ui";
 import type { Item, ItemType } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -53,7 +54,7 @@ export default function ProfilePage() {
 
       if (error) throw error;
     } catch {
-      setActionError("Failed to mark as resolved. Please try again.");
+      setActionError(t("profile.error.resolve"));
     } finally {
       setResolvingId(null);
     }
@@ -75,17 +76,17 @@ export default function ProfilePage() {
       const result = data as { success: boolean; error?: string };
       if (!result.success) {
         const messages: Record<string, string> = {
-          ITEM_NOT_FOUND: "This item no longer exists.",
-          NOT_OWNER: "You can only undo claims on your own posts.",
-          NOT_CLAIMED: "This item is already back on the board.",
+          ITEM_NOT_FOUND: t("profile.unclaim.notFound"),
+          NOT_OWNER: t("profile.unclaim.notOwner"),
+          NOT_CLAIMED: t("profile.unclaim.notClaimed"),
         };
-        throw new Error(messages[result.error || ""] || "Failed to undo the claim.");
+        throw new Error(messages[result.error || ""] || t("profile.error.unclaim"));
       }
     } catch (err) {
       setActionError(
         err instanceof Error && err.message
           ? err.message
-          : "Failed to undo the claim. Please try again."
+          : t("profile.error.unclaim")
       );
     } finally {
       setUnclaimingId(null);
@@ -120,7 +121,7 @@ export default function ProfilePage() {
       if (error) throw error;
       setDeleteItem(null);
     } catch {
-      setActionError("Failed to delete item. Please try again.");
+      setActionError(t("profile.error.delete"));
     } finally {
       setDeleting(false);
     }
@@ -131,7 +132,7 @@ export default function ProfilePage() {
       {/* Success message */}
       {showSuccess && (
         <div className="mb-6 p-4 rounded-xl bg-teal/10 border border-teal text-center">
-          <span className="text-teal font-semibold">{"\u2713"} Your post was submitted successfully!</span>
+          <span className="text-teal font-semibold">{t("profile.success")}</span>
         </div>
       )}
 
@@ -147,7 +148,7 @@ export default function ProfilePage() {
         href="/browse"
         className="inline-flex items-center gap-2 text-white/35 text-sm font-display font-bold mb-10 hover:text-yellow transition-colors cursor-pointer"
       >
-        {"\u2190"} Back to browse
+        {"\u2190"} {t("common.backToBrowse")}
       </Link>
 
       {/* Profile header */}
@@ -156,7 +157,7 @@ export default function ProfilePage() {
       {/* Section header */}
       <div className="flex items-center justify-between flex-wrap gap-4 mb-5">
         <span className="font-display text-[0.7rem] font-bold tracking-[0.18em] uppercase text-white/40">
-          Your posts
+          {t("profile.sectionLabel")}
         </span>
         <div className="flex bg-white/[0.04] border border-white/[0.08] rounded-full p-[3px] gap-[2px]">
           <button
@@ -167,7 +168,7 @@ export default function ProfilePage() {
                 : "bg-transparent text-white/40"
             }`}
           >
-            {"\u2726"} Found
+            {t("profile.tab.found")}
           </button>
           <button
             onClick={() => setType("lost")}
@@ -177,7 +178,7 @@ export default function ProfilePage() {
                 : "bg-transparent text-white/40"
             }`}
           >
-            Lost
+            {t("profile.tab.lost")}
           </button>
         </div>
       </div>
@@ -195,10 +196,10 @@ export default function ProfilePage() {
       ) : filteredItems.length === 0 ? (
         <div className="py-16 text-center flex flex-col items-center gap-3">
           <h3 className="font-display text-lg font-extrabold">
-            No {type} items yet
+            {t("profile.empty.title", { type })}
           </h3>
           <p className="text-sm text-white/35 max-w-[280px] leading-relaxed">
-            You haven&apos;t posted any {type} items. Help your fellow ESTIN students!
+            {t("profile.empty.desc", { type })}
           </p>
           <Link
             href={type === "found" ? "/report/found" : "/report/lost"}
@@ -206,7 +207,7 @@ export default function ProfilePage() {
               type === "found" ? "bg-teal text-black" : "bg-red text-white"
             }`}
           >
-            {type === "found" ? "Post a found item \u2192" : "Report a lost item \u2192"}
+            {type === "found" ? t("profile.empty.cta.found") : t("profile.empty.cta.lost")}
           </Link>
         </div>
       ) : (
@@ -235,9 +236,9 @@ export default function ProfilePage() {
         open={!!deleteItem}
         onOpenChange={(open) => { if (!open) setDeleteItem(null); }}
         onConfirm={handleDelete}
-        title="Delete this post?"
-        message="This action cannot be undone. The item will be permanently removed from FINDit."
-        confirmText="Delete"
+        title={t("profile.delete.title")}
+        message={t("profile.delete.message")}
+        confirmText={t("common.delete")}
         variant="danger"
         loading={deleting}
       />

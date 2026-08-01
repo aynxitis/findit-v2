@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Lock } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { GoogleButton } from "./google-button";
+import { t } from "@/lib/strings";
 
 interface AuthGateProps {
   children: ReactNode;
@@ -14,29 +15,25 @@ interface AuthGateProps {
 function getGateContent(pathname: string) {
   if (pathname.startsWith("/profile")) {
     return {
-      title: "See your posts & activity",
-      description:
-        "Sign in with your @estin.dz account to view and manage your found and lost reports.",
+      title: t("auth.gate.profile.title"),
+      description: t("auth.gate.profile.desc"),
     };
   }
   if (pathname.startsWith("/browse")) {
     return {
-      title: "ESTIN students only",
-      description:
-        "Sign in with your @estin.dz account to browse lost and found items.",
+      title: t("auth.gate.browse.title"),
+      description: t("auth.gate.browse.desc"),
     };
   }
   if (pathname.startsWith("/report")) {
     return {
-      title: "Sign in first",
-      description:
-        "You need to be signed in with your @estin.dz account to report an item.",
+      title: t("auth.gate.report.title"),
+      description: t("auth.gate.report.desc"),
     };
   }
   return {
-    title: "ESTIN students only",
-    description:
-      "Sign in with your @estin.dz account to access this page.",
+    title: t("auth.gate.default.title"),
+    description: t("auth.gate.default.desc"),
   };
 }
 
@@ -56,10 +53,10 @@ export function AuthGate({ children, fallback }: AuthGateProps) {
           <Lock className="w-8 h-8 text-red" />
         </div>
         <h2 className="auth-gate-title font-display text-2xl font-extrabold tracking-tight text-red">
-          Account suspended
+          {t("auth.banned.title")}
         </h2>
         <p className="auth-gate-desc">
-          Your account has been suspended. Contact the FINDit team if you think this is a mistake.
+          {t("auth.banned.desc")}
         </p>
       </div>
     );
@@ -98,7 +95,7 @@ export function AuthGate({ children, fallback }: AuthGateProps) {
         </p>
       )}
       <p className="auth-gate-note">
-        Only{" "}<strong>@estin.dz</strong>{" "}accounts will be accepted.
+        {t("auth.gate.note.prefix")}{" "}<strong>@estin.dz</strong>{" "}{t("auth.gate.note.suffix")}
       </p>
     </div>
   );
@@ -112,7 +109,7 @@ function AuthGateLoader() {
         <div className="absolute inset-0 w-12 h-12 rounded-full border-2 border-t-yellow border-l-transparent border-r-transparent border-b-transparent animate-spin" />
       </div>
       <p className="text-sm text-muted-foreground animate-pulse">
-        Loading...
+        {t("common.loading")}
       </p>
     </div>
   );
