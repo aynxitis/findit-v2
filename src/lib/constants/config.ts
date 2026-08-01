@@ -8,7 +8,7 @@
  * the admin UI only through the service-role route at /api/admin/data.
  */
 export const ITEM_SELECT_COLUMNS =
-  "id,ref,type,category,location,zone,where_left,date,description,photo_url,status,user_id,user_name,created_at";
+  "id,ref,type,category,location,zone,where_left,date,description,photo_url,photo_path,status,user_id,user_name,created_at";
 
 /**
  * Canonical origin, used for metadata, robots.txt and the sitemap.

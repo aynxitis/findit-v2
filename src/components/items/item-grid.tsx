@@ -1,6 +1,7 @@
 "use client";
 
 import { ItemCard } from "./item-card";
+import { useItemPhotos } from "@/hooks/use-item-photos";
 import type { Item } from "@/lib/types/item";
 import Link from "next/link";
 import { t } from "@/lib/strings";
@@ -24,6 +25,9 @@ export function ItemGrid({
   emptyType = "found",
   searchQuery,
 }: ItemGridProps) {
+  // Called before the early returns below — hooks cannot be conditional.
+  const { resolve } = useItemPhotos(items);
+
   if (loading) {
     return (
       <div className="items-grid">
@@ -80,6 +84,7 @@ export function ItemGrid({
         <ItemCard
           key={item.id}
           item={item}
+          photoSrc={resolve(item)}
           currentUserId={currentUserId}
           onClaim={onClaim}
           index={index}

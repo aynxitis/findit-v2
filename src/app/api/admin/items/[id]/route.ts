@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { verifyAdmin } from "@/lib/supabase/admin-auth";
+import { itemStoragePath, PHOTO_BUCKET } from "@/lib/photos";
 import {
   VALID_TYPES,
   VALID_STATUSES,
@@ -110,21 +111,17 @@ export async function DELETE(
     // Fetch item first to get photo_url for storage cleanup
     const { data: item } = await supabase
       .from("items")
-      .select("photo_url")
+      .select("photo_url,photo_path")
       .eq("id", id)
       .single();
 
     // Clean up photo from storage if present
-    if (item?.photo_url) {
-      const marker = "/object/public/item-photos/";
-      const idx = item.photo_url.indexOf(marker);
-      if (idx !== -1) {
-        const storagePath = item.photo_url.substring(idx + marker.length);
-        await supabase.storage
-          .from("item-photos")
-          .remove([storagePath])
-          .catch((err: unknown) => console.warn("[admin/items DELETE] storage cleanup failed:", err));
-      }
+    const storagePath = item ? itemStoragePath(item) : null;
+    if (storagePath) {
+      await supabase.storage
+        .from(PHOTO_BUCKET)
+        .remove([storagePath])
+        .catch((err: unknown) => console.warn("[admin/items DELETE] storage cleanup failed:", err));
     }
 
     const { error: deleteError } = await supabase

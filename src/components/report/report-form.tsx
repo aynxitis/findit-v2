@@ -253,7 +253,7 @@ export function ReportForm({ type }: ReportFormProps) {
           : null,
         date: formData.date,
         description: formData.description.trim().slice(0, 400) || null,
-        photo_url: null as string | null,
+        photo_path: null as string | null,
         user_email: user.email,
         user_name: user.user_metadata?.full_name || null,
         user_id: user.id,
@@ -294,11 +294,10 @@ export function ReportForm({ type }: ReportFormProps) {
           throw new Error(t("form.error.photoUpload"));
         }
 
-        const { data: urlData } = supabase.storage
-          .from("item-photos")
-          .getPublicUrl(path);
-
-        itemData.photo_url = urlData.publicUrl;
+        // Store the path, not a public URL. The URL is derived at render
+        // time (src/lib/photos.ts), which is what lets the bucket become
+        // private without invalidating every row.
+        itemData.photo_path = path;
         uploadedPhotoPath = path;
       }
 
@@ -336,7 +335,7 @@ export function ReportForm({ type }: ReportFormProps) {
           year: "numeric",
         }),
         description: itemData.description || "",
-        hasPhoto: !!itemData.photo_url,
+        hasPhoto: !!itemData.photo_path,
       });
       setShowSuccess(true);
     } catch (err) {

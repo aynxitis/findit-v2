@@ -8,6 +8,8 @@ import type { Item } from "@/lib/types/item";
 import { t } from "@/lib/strings";
 
 interface ProfileItemCardProps {
+  /** Resolved photo URL from useItemPhotos. Falls back to item.photo_url. */
+  photoSrc?: string | null;
   item: Item;
   onResolve: () => void;
   onUnclaim: () => void;
@@ -18,6 +20,7 @@ interface ProfileItemCardProps {
 
 export function ProfileItemCard({
   item,
+  photoSrc,
   onResolve,
   onUnclaim,
   onDelete,
@@ -39,9 +42,9 @@ export function ProfileItemCard({
     >
       {/* Photo */}
       <div className="aspect-video relative bg-[var(--background)]">
-        {item.photo_url ? (
+        {(photoSrc ?? item.photo_url) ? (
           <Image
-            src={item.photo_url}
+            src={(photoSrc ?? item.photo_url) as string}
             alt={label}
             fill
             className="object-cover"

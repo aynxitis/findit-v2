@@ -30,6 +30,8 @@ export interface Item {
   where_left?: ItemWhereLeft;
   description?: string;
   photo_url?: string;
+  /** Storage object path. Preferred over photo_url; see src/lib/photos.ts. */
+  photo_path?: string | null;
   date: string;
   status: ItemStatus;
   user_id: string;

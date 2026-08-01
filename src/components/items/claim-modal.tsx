@@ -7,6 +7,7 @@ import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy
 import type { Item } from "@/lib/types/item";
 import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
+import { useItemPhotos } from "@/hooks/use-item-photos";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils/format";
 import { t } from "@/lib/strings";
@@ -37,6 +38,8 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
   const [error, setError] = useState<string | null>(null);
   const [contact, setContact] = useState<PosterContact | null>(null);
   const supabase = useMemo(() => createClient(), []);
+  const photoItems = useMemo(() => (item ? [item] : []), [item]);
+  const { resolve } = useItemPhotos(photoItems);
 
   const success = contact !== null;
 
@@ -134,9 +137,9 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           className="relative w-full mt-4 rounded-lg overflow-hidden bg-surface border border-border"
           style={{ aspectRatio: "4/3" }}
         >
-          {item.photo_url ? (
+          {resolve(item) ? (
             <Image
-              src={item.photo_url}
+              src={resolve(item) as string}
               alt={categoryLabel}
               fill
               className="object-contain"

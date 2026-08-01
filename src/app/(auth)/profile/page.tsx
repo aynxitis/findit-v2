@@ -10,6 +10,8 @@ import { ProfileHeader, ProfileItemCard } from "@/components/profile";
 import { ConfirmModal } from "@/components/ui";
 import type { Item, ItemType } from "@/lib/types/item";
 import { t } from "@/lib/strings";
+import { itemStoragePath, PHOTO_BUCKET } from "@/lib/photos";
+import { useItemPhotos } from "@/hooks/use-item-photos";
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -26,6 +28,7 @@ export default function ProfilePage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const supabase = useMemo(() => createClient(), []);
+  const { resolve } = useItemPhotos(items);
 
   // Filter items by type
   const filteredItems = useMemo(() => {
@@ -100,16 +103,12 @@ export default function ProfilePage() {
     setActionError(null);
     try {
       // Clean up photo from storage if present
-      if (deleteItem.photo_url) {
-        const marker = "/object/public/item-photos/";
-        const idx = deleteItem.photo_url.indexOf(marker);
-        if (idx !== -1) {
-          const storagePath = deleteItem.photo_url.substring(idx + marker.length);
-          await supabase.storage
-            .from("item-photos")
-            .remove([storagePath])
-            .catch(() => {}); // Don't block delete if storage cleanup fails
-        }
+      const storagePath = itemStoragePath(deleteItem);
+      if (storagePath) {
+        await supabase.storage
+          .from(PHOTO_BUCKET)
+          .remove([storagePath])
+          .catch(() => {}); // Don't block delete if storage cleanup fails
       }
 
       const { error } = await supabase
@@ -220,6 +219,7 @@ export default function ProfilePage() {
             >
               <ProfileItemCard
                 item={item}
+                photoSrc={resolve(item)}
                 onResolve={() => handleResolve(item)}
                 onUnclaim={() => handleUnclaim(item)}
                 onDelete={() => setDeleteItem(item)}

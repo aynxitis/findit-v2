@@ -11,6 +11,8 @@ import { t } from "@/lib/strings";
 const EXPIRY_DAYS = 90;
 
 interface ItemCardProps {
+  /** Resolved photo URL from useItemPhotos. Falls back to item.photo_url. */
+  photoSrc?: string | null;
   item: Item;
   currentUserId?: string | null;
   onClaim?: (item: Item) => void;
@@ -22,7 +24,10 @@ function isExpired(item: Item): boolean {
   return Date.now() - new Date(item.created_at).getTime() > EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 }
 
-function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCardProps) {
+function ItemCardComponent({ item, photoSrc, currentUserId, onClaim, index = 0 }: ItemCardProps) {
+  // photoSrc is the signed URL; photo_url is the legacy public one, still
+  // populated until P2-2 step 5 drops the column.
+  const src = photoSrc ?? item.photo_url ?? null;
   const expired = isExpired(item);
   const isClaimed = item.status === "claimed";
   const isOwnPost = currentUserId && item.user_id === currentUserId;
@@ -73,10 +78,10 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       style={{ animationDelay: `${index * 0.04}s` }}
     >
       {/* Photo or Placeholder */}
-      {item.photo_url ? (
+      {src ? (
         <div className="item-photo-wrapper">
           <Image
-            src={item.photo_url}
+            src={src}
             alt={categoryLabel}
             fill
             className="item-photo"
@@ -142,6 +147,7 @@ export const ItemCard = memo(ItemCardComponent, (prevProps, nextProps) => {
     prevProps.item.status === nextProps.item.status &&
     prevProps.item.description === nextProps.item.description &&
     prevProps.item.photo_url === nextProps.item.photo_url &&
+    prevProps.photoSrc === nextProps.photoSrc &&
     prevProps.item.category === nextProps.item.category &&
     prevProps.item.location === nextProps.item.location &&
     prevProps.item.date === nextProps.item.date &&

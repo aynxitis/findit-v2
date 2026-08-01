@@ -4,7 +4,7 @@
 -- ============================================================================
 --
 -- This file is the truth for a FRESH install. It already folds in every
--- migration through 009, so a fresh database must NOT then replay
+-- migration through 010, so a fresh database must NOT then replay
 -- supabase/migrations/ — section 10 records them as applied instead.
 --
 -- Existing databases go the other way: leave this file alone and apply the
@@ -13,7 +13,7 @@
 -- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
 --            004-privacy-lockdown, 005-claim-reversibility,
 --            006-schema-migrations, 007-notification-keys,
---            008-drop-unused-user-columns, 009-item-ref.
+--            008-drop-unused-user-columns, 009-item-ref, 010-photo-path.
 -- ============================================================================
 
 
@@ -57,6 +57,7 @@ CREATE TABLE public.items (
   date        date                NOT NULL,
   description text                CHECK (char_length(description) <= 400),
   photo_url   text                CHECK (char_length(photo_url) <= 500),
+  photo_path  text                CHECK (char_length(photo_path) <= 500),
   status      public.item_status  NOT NULL DEFAULT 'open',
   user_id     uuid                NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   user_name   text,
@@ -185,7 +186,7 @@ REVOKE SELECT ON public.items FROM anon, authenticated;
 
 GRANT SELECT (
   id, ref, type, category, location, zone, where_left, date, description,
-  photo_url, status, user_id, user_name, created_at
+  photo_url, photo_path, status, user_id, user_name, created_at
 ) ON public.items TO authenticated;
 
 
@@ -539,7 +540,8 @@ INSERT INTO public.schema_migrations (filename) VALUES
   ('006-schema-migrations.sql'),
   ('007-notification-keys.sql'),
   ('008-drop-unused-user-columns.sql'),
-  ('009-item-ref.sql')
+  ('009-item-ref.sql'),
+  ('010-photo-path.sql')
 ON CONFLICT (filename) DO NOTHING;
 
 
