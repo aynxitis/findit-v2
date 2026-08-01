@@ -48,3 +48,6 @@ next-env.d.ts
 # Local-only docs (audits, notes, planning)
 docs/
 audits/
+
+# agents
+.claude
