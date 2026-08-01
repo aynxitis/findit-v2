@@ -75,6 +75,7 @@ export const en = {
   "item.status.found": "Found",
   "item.status.lost": "Lost",
   "item.status.claimed": "Claimed",
+  "item.status.resolved": "Resolved",
   "item.status.expired": "Expired",
   "item.poster.you": "You",
   "item.poster.anonymous": "ESTIN Student",
@@ -130,6 +131,8 @@ export const en = {
   "profile.unclaim.notFound": "This item no longer exists.",
   "profile.unclaim.notOwner": "You can only undo claims on your own posts.",
   "profile.unclaim.notClaimed": "This item is already back on the board.",
+  "profile.resolve.notOwner": "You can only resolve your own posts.",
+  "profile.resolve.notOpen": "This item is no longer open.",
 
   // ── Report pages ───────────────────────────────────────────────────────
   "report.found.title.prefix": "Report a",

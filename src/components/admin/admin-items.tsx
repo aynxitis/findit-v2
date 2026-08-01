@@ -31,7 +31,7 @@ export function AdminItems() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const [filterType, setFilterType] = useState<"" | "found" | "lost">("");
-  const [filterStatus, setFilterStatus] = useState<"" | "open" | "claimed">("");
+  const [filterStatus, setFilterStatus] = useState<"" | "open" | "claimed" | "resolved">("");
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
   const [userSearch, setUserSearch] = useState("");
@@ -278,6 +278,7 @@ export function AdminItems() {
               <option value="">{t("admin.filter.allStatuses")}</option>
               <option value="open">Open</option>
               <option value="claimed">Claimed</option>
+            <option value="resolved">Resolved</option>
             </select>
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={selectCls}>
               <option value="">{t("admin.filter.allCategories")}</option>

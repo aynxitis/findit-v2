@@ -29,7 +29,11 @@ function ItemCardComponent({ item, photoSrc, currentUserId, onClaim, index = 0 }
   // populated until P2-2 step 5 drops the column.
   const src = photoSrc ?? item.photo_url ?? null;
   const expired = isExpired(item);
-  const isClaimed = item.status === "claimed";
+  // Both closed states render the same recessed treatment (§2). They differ in
+  // label only: "Claimed" means another student claimed it, "Resolved" means the
+  // poster closed it themselves.
+  const isResolved = item.status === "resolved";
+  const isClaimed = item.status === "claimed" || isResolved;
   const isOwnPost = currentUserId && item.user_id === currentUserId;
 
   const dateStr = item.date
@@ -48,7 +52,7 @@ function ItemCardComponent({ item, photoSrc, currentUserId, onClaim, index = 0 }
   let badgeText: string;
   if (isClaimed) {
     badgeClass = "badge-claimed";
-    badgeText = t("item.status.claimed");
+    badgeText = isResolved ? t("item.status.resolved") : t("item.status.claimed");
   } else if (expired) {
     badgeClass = "badge-expired";
     badgeText = t("item.status.expired");

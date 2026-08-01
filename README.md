@@ -46,7 +46,7 @@ npm install
 1. `supabase/schema.sql` — tables, enums, RLS policies, grants, triggers, RPCs
 2. `supabase/storage-policies.sql` — `item-photos` bucket policies
 
-`schema.sql` already folds in every migration through `010`, and records them
+`schema.sql` already folds in every migration through `011`, and records them
 in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 
 **Existing database.** Leave `schema.sql` alone and apply the numbered files in
@@ -65,6 +65,7 @@ in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 | `008-drop-unused-user-columns.sql` | Drops `users.bio` and `users.verified`; replaces `handle_new_user()` first |
 | `009-item-ref.sql` | Adds `items.ref`, backfilled in `created_at` order |
 | `010-photo-path.sql` | Adds `items.photo_path`, backfilled from `photo_url` |
+| `011-resolved-status.sql` | Adds `resolved` status and `resolve_item()`; `claimed` now means a claim row exists |
 
 Optional: `supabase/cleanup-expired.sql` (90-day cleanup helper — schedule via `pg_cron` if desired).
 

@@ -4,7 +4,7 @@
 -- ============================================================================
 --
 -- This file is the truth for a FRESH install. It already folds in every
--- migration through 010, so a fresh database must NOT then replay
+-- migration through 011, so a fresh database must NOT then replay
 -- supabase/migrations/ — section 10 records them as applied instead.
 --
 -- Existing databases go the other way: leave this file alone and apply the
@@ -13,7 +13,8 @@
 -- Folded in: 001-rpc-permissions, 002-performance-fixes, 003-expiry-90-days,
 --            004-privacy-lockdown, 005-claim-reversibility,
 --            006-schema-migrations, 007-notification-keys,
---            008-drop-unused-user-columns, 009-item-ref, 010-photo-path.
+--            008-drop-unused-user-columns, 009-item-ref, 010-photo-path,
+--            011-resolved-status.
 -- ============================================================================
 
 
@@ -22,7 +23,7 @@
 -- ──────────────────────────────────────────────────────────────────────────────
 
 CREATE TYPE public.item_type       AS ENUM ('found', 'lost');
-CREATE TYPE public.item_status     AS ENUM ('open', 'claimed');
+CREATE TYPE public.item_status     AS ENUM ('open', 'claimed', 'resolved');
 CREATE TYPE public.item_category   AS ENUM ('keys', 'card', 'phone', 'bag', 'clothing', 'electronics', 'other');
 CREATE TYPE public.item_zone       AS ENUM ('school', 'residence', 'unknown');
 CREATE TYPE public.item_where_left AS ENUM ('with_me', 'admin', 'left_there');
@@ -376,7 +377,7 @@ BEGIN
     RETURN jsonb_build_object('success', false, 'error', 'NOT_OWNER');
   END IF;
 
-  IF v_item.status != 'claimed' THEN
+  IF v_item.status = 'open' THEN
     RETURN jsonb_build_object('success', false, 'error', 'NOT_CLAIMED');
   END IF;
 
@@ -394,6 +395,44 @@ BEGIN
   END IF;
 
   UPDATE public.items SET status = 'open' WHERE id = p_item_id;
+
+  RETURN jsonb_build_object('success', true);
+END;
+$$;
+
+
+-- ── Resolve Item ─────────────────────────────────────────────────────────────
+-- The poster closes their own listing. No claims row and no notification —
+-- nobody else was involved. This is why 'resolved' is a distinct status:
+-- status='claimed' must mean exactly "a claims row exists" (P2-3).
+-- Returns JSON: { success, error? }
+-- Errors: ITEM_NOT_FOUND | NOT_OWNER | NOT_OPEN
+
+CREATE OR REPLACE FUNCTION public.resolve_item(p_item_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_item   record;
+  v_caller uuid := (select auth.uid());
+BEGIN
+  SELECT * INTO v_item FROM public.items WHERE id = p_item_id FOR UPDATE;
+
+  IF v_item IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'ITEM_NOT_FOUND');
+  END IF;
+
+  IF v_caller IS NULL OR v_item.user_id != v_caller THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_OWNER');
+  END IF;
+
+  IF v_item.status != 'open' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'NOT_OPEN');
+  END IF;
+
+  UPDATE public.items SET status = 'resolved' WHERE id = p_item_id;
 
   RETURN jsonb_build_object('success', true);
 END;
@@ -497,11 +536,13 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text) FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.unclaim_item(uuid)                 FROM anon, public;
+REVOKE EXECUTE ON FUNCTION public.resolve_item(uuid)                 FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)        FROM anon, public;
 REVOKE EXECUTE ON FUNCTION public.get_user_stats(uuid)               FROM anon, public;
 
 GRANT EXECUTE ON FUNCTION public.claim_item(uuid, uuid, text, text)  TO authenticated;
 GRANT EXECUTE ON FUNCTION public.unclaim_item(uuid)                  TO authenticated;
+GRANT EXECUTE ON FUNCTION public.resolve_item(uuid)                  TO authenticated;
 GRANT EXECUTE ON FUNCTION public.check_post_rate_limit(uuid)         TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_user_stats(uuid)                TO authenticated;
 
@@ -541,7 +582,8 @@ INSERT INTO public.schema_migrations (filename) VALUES
   ('007-notification-keys.sql'),
   ('008-drop-unused-user-columns.sql'),
   ('009-item-ref.sql'),
-  ('010-photo-path.sql')
+  ('010-photo-path.sql'),
+  ('011-resolved-status.sql')
 ON CONFLICT (filename) DO NOTHING;
 
 

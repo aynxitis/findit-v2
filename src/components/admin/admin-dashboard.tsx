@@ -47,7 +47,7 @@ export function AdminDashboard() {
         totalItems: itemsData.length,
         foundItems: itemsData.filter((i) => i.type === "found").length,
         lostItems: itemsData.filter((i) => i.type === "lost").length,
-        claimedItems: itemsData.filter((i) => i.status === "claimed").length,
+        claimedItems: itemsData.filter((i) => i.status === "claimed" || i.status === "resolved").length,
         totalUsers: usersData.length,
       });
     } catch {

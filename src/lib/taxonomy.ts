@@ -107,10 +107,10 @@ export const VALID_WHERE_LEFT: string[] = Object.keys(WHERE_LEFT);
 // `type` and `status` carry no labels or icons, so they are plain unions rather
 // than records. They still mirror the item_type / item_status Postgres enums.
 export type ItemType = "found" | "lost";
-export type ItemStatus = "open" | "claimed";
+export type ItemStatus = "open" | "claimed" | "resolved";
 
 export const VALID_TYPES: string[] = ["found", "lost"];
-export const VALID_STATUSES: string[] = ["open", "claimed"];
+export const VALID_STATUSES: string[] = ["open", "claimed", "resolved"];
 
 // ── Option lists for form controls ───────────────────────────────────────────
 // `label` carries the icon because the existing selects render a single string.

@@ -9,7 +9,7 @@ import {
   LOCATION_LABELS,
   locationSlugsForZone,
 } from "@/lib/taxonomy";
-import type { Item, ItemCategory, ItemLocation, ItemZone, ItemWhereLeft } from "@/lib/types/item";
+import type { Item, ItemCategory, ItemLocation, ItemZone, ItemWhereLeft, ItemStatus } from "@/lib/types/item";
 import { t } from "@/lib/strings";
 
 interface ModalFormState {
@@ -21,7 +21,7 @@ interface ModalFormState {
   date: string;
   description: string;
   photo_url: string;
-  status: "open" | "claimed";
+  status: ItemStatus;
   user_id: string;
   user_name: string;
   user_email: string;
@@ -36,7 +36,7 @@ export interface AdminItemSaveData {
   date: string;
   description: string | null;
   photo_url: string | null;
-  status: "open" | "claimed";
+  status: ItemStatus;
   user_id: string;
   user_name: string | null;
   user_email: string | null;
@@ -182,9 +182,10 @@ export function AdminItemModal({
             </label>
             <label className="flex flex-col gap-1">
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Status</span>
-              <select value={form.status} onChange={(e) => set("status", e.target.value as "open" | "claimed")} className={selectCls}>
+              <select value={form.status} onChange={(e) => set("status", e.target.value as ItemStatus)} className={selectCls}>
                 <option value="open">Open</option>
                 <option value="claimed">Claimed</option>
+                <option value="resolved">Resolved</option>
               </select>
             </label>
           </div>

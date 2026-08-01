@@ -40,7 +40,7 @@ export default function ProfilePage() {
     return {
       found: items.filter((i) => i.type === "found").length,
       lost: items.filter((i) => i.type === "lost").length,
-      claimed: items.filter((i) => i.status === "claimed").length,
+      claimed: items.filter((i) => i.status === "claimed" || i.status === "resolved").length,
     };
   }, [items]);
 
@@ -49,15 +49,28 @@ export default function ProfilePage() {
     setResolvingId(item.id);
     setActionError(null);
     try {
-      const { error } = await supabase
-        .from("items")
-        .update({ status: "claimed" })
-        .eq("id", item.id)
-        .eq("user_id", user!.id);
+      // Goes through resolve_item() rather than a direct UPDATE. The direct
+      // write set status='claimed' without a claims row, which is what made
+      // status and the claims table disagree.
+      const { data, error } = await supabase.rpc("resolve_item", {
+        p_item_id: item.id,
+      });
 
       if (error) throw error;
-    } catch {
-      setActionError(t("profile.error.resolve"));
+
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        const messages: Record<string, string> = {
+          ITEM_NOT_FOUND: t("profile.unclaim.notFound"),
+          NOT_OWNER: t("profile.resolve.notOwner"),
+          NOT_OPEN: t("profile.resolve.notOpen"),
+        };
+        throw new Error(messages[result.error || ""] || t("profile.error.resolve"));
+      }
+    } catch (err) {
+      setActionError(
+        err instanceof Error && err.message ? err.message : t("profile.error.resolve")
+      );
     } finally {
       setResolvingId(null);
     }

@@ -31,7 +31,7 @@ export function ProfileItemCard({
   const label = CATEGORY_LABELS[item.category] || item.category;
   const location = LOCATION_LABELS[item.location] || item.location;
   const date = formatTimestamp(item.created_at);
-  const isClaimed = item.status === "claimed";
+  const isClaimed = item.status === "claimed" || item.status === "resolved";
 
   return (
     <div
