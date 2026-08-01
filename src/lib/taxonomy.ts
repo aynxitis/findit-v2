@@ -31,9 +31,10 @@ export const CATEGORIES = {
 export type ItemCategory = keyof typeof CATEGORIES;
 
 // ── Locations ────────────────────────────────────────────────────────────────
-// `zone` groups locations for the report form's two-step picker. It is not
-// stored on new items (P1-5 drops it from the form) but the column still
-// exists and the admin modal still filters by it.
+// The `zone` field groups locations for the admin modal's filter. It is no
+// longer collected from students — P1-5 removed it from the report form, since
+// a location already implies its zone. The column still exists and the admin
+// modal still reads it; dropping it is a later migration.
 
 export const LOCATIONS = {
   library:   { label: "Library",             icon: "📚", zone: "school"    },
@@ -127,37 +128,29 @@ export const WHERE_LEFT_OPTIONS = Object.entries(WHERE_LEFT).map(
 );
 
 /**
- * Locations belonging to a zone, plus the free-text "other" escape hatch the
- * report form offers. `unknown` is excluded — it is the fallback the form
- * writes when nothing is picked, not something a user selects from a zone list.
- *
- * NOTE: the free-text `other` option writes raw strings to `items.location`,
- * which makes those items unfilterable. P3-5 resolves that; do not paper over
- * it here.
- */
-export function locationsForZone(
-  zone: ItemZone | null | undefined
-): Array<{ value: string; label: string }> {
-  const inZone = Object.entries(LOCATIONS).filter(
-    ([slug, v]) => v.zone === zone && slug !== "unknown"
-  );
-  const source = inZone.length > 0 ? inZone : Object.entries(LOCATIONS);
-  return [
-    ...source.map(([value, { label, icon }]) => ({
-      value,
-      label: `${icon} ${label}`,
-    })),
-    { value: LOCATION_OTHER, label: `${CATEGORIES.other.icon} Other` },
-  ];
-}
-
-/**
  * UI-only sentinel for the report form's "Other" spot, which reveals a
  * free-text input. Not a `LOCATIONS` key and never stored — the typed string is
  * written to `items.location` verbatim, which is exactly why those items are
  * unfilterable today. P3-5 decides whether to bucket or drop it.
  */
 export const LOCATION_OTHER = "other";
+
+/**
+ * Every place a student can pick in the report form, plus the free-text
+ * escape hatch.
+ *
+ * Flat, not grouped by zone. The form used to ask for a zone (école /
+ * résidence / not sure) and then a spot within it — two taps and a concept the
+ * schema never needed, since `location` already implies its zone. P1-5 dropped
+ * `zone` from the form, so this is the whole picker.
+ */
+export const LOCATION_OPTIONS = [
+  ...Object.entries(LOCATIONS).map(([value, { label, icon }]) => ({
+    value,
+    label: `${icon} ${label}`,
+  })),
+  { value: LOCATION_OTHER, label: `${CATEGORIES.other.icon} Other` },
+];
 
 /** Slugs valid for a zone, unlabelled — used by the admin modal. */
 export function locationSlugsForZone(zone: string | null | undefined): string[] {

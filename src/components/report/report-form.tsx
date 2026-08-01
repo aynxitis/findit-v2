@@ -10,10 +10,9 @@ import type { RateLimitResult } from "@/lib/types/api";
 import { t } from "@/lib/strings";
 import {
   CATEGORY_OPTIONS,
-  ZONE_OPTIONS,
   WHERE_LEFT_OPTIONS,
-  locationsForZone,
-  type ItemZone,
+  LOCATION_OPTIONS,
+  LOCATION_OTHER,
   CATEGORY_LABELS,
   LOCATION_LABELS,
   WHERE_LEFT_LABELS,
@@ -40,7 +39,6 @@ interface ReportFormProps {
 
 interface FormData {
   category: string | null;
-  zone: string | null;
   spot: string | null;
   customSpot: string;
   whereLeft: string | null;
@@ -67,7 +65,6 @@ export function ReportForm({ type }: ReportFormProps) {
 
   const [formData, setFormData] = useState<FormData>({
     category: null,
-    zone: null,
     spot: null,
     customSpot: "",
     whereLeft: null,
@@ -112,20 +109,12 @@ export function ReportForm({ type }: ReportFormProps) {
 
   // Chip selection handler
   const selectChip = (
-    field: "category" | "zone" | "whereLeft",
+    field: "category" | "whereLeft",
     value: string
   ) => {
-    setFormData((prev) => {
-      const updates: Partial<FormData> = { [field]: value };
-      if (field === "zone") {
-        updates.spot = null;
-        updates.customSpot = "";
-      }
-      return { ...prev, ...updates };
-    });
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (field === "category") setErrors((prev) => ({ ...prev, category: false }));
-    if (field === "zone") setErrors((prev) => ({ ...prev, location: false }));
     if (field === "whereLeft") setErrors((prev) => ({ ...prev, whereLeft: false }));
   };
 
@@ -133,7 +122,7 @@ export function ReportForm({ type }: ReportFormProps) {
     setFormData((prev) => ({
       ...prev,
       spot: value,
-      customSpot: value === "other" ? prev.customSpot : "",
+      customSpot: value === LOCATION_OTHER ? prev.customSpot : "",
     }));
     setErrors((prev) => ({ ...prev, location: false }));
   };
@@ -170,16 +159,14 @@ export function ReportForm({ type }: ReportFormProps) {
 
   // Get location value
   const getLocationValue = (): string | null => {
-    if (formData.zone === "unknown") return "unknown";
     if (!formData.spot) return null;
-    if (formData.spot === "other") return formData.customSpot.trim() || null;
+    if (formData.spot === LOCATION_OTHER) return formData.customSpot.trim() || null;
     return formData.spot;
   };
 
   const getLocationLabel = (): string => {
-    if (formData.zone === "unknown") return t("form.label.notSure");
     if (!formData.spot) return "";
-    if (formData.spot === "other") return formData.customSpot.trim() || "";
+    if (formData.spot === LOCATION_OTHER) return formData.customSpot.trim() || "";
     return LOCATION_LABELS[formData.spot] || formData.spot;
   };
 
@@ -198,10 +185,10 @@ export function ReportForm({ type }: ReportFormProps) {
     }
 
     const loc = getLocationValue();
-    if (loc && !VALID_LOCATIONS.includes(loc) && formData.spot !== "other") {
+    if (loc && !VALID_LOCATIONS.includes(loc) && formData.spot !== LOCATION_OTHER) {
       newErrors.location = true;
     }
-    if (formData.spot === "other" && loc && loc.length > 80) {
+    if (formData.spot === LOCATION_OTHER && loc && loc.length > 80) {
       newErrors.location = true;
     }
 
@@ -260,7 +247,6 @@ export function ReportForm({ type }: ReportFormProps) {
       const itemData = {
         type,
         category: VALID_CATEGORIES.includes(formData.category!) ? formData.category : null,
-        zone: formData.zone?.slice(0, 40) || null,
         location: locationValue?.slice(0, 80) || null,
         where_left: type === "found" && formData.whereLeft && VALID_WHERE_LEFT.includes(formData.whereLeft)
           ? formData.whereLeft
@@ -371,11 +357,6 @@ export function ReportForm({ type }: ReportFormProps) {
     }
   };
 
-  // Spot options based on zone
-  const spotOptions = formData.zone && formData.zone !== "unknown"
-    ? locationsForZone(formData.zone as ItemZone)
-    : [];
-
   if (showSuccess && submittedData) {
     return (
       <div className="success-screen">
@@ -430,7 +411,6 @@ export function ReportForm({ type }: ReportFormProps) {
               setSubmittedData(null);
               setFormData({
                 category: null,
-                zone: null,
                 spot: null,
                 customSpot: "",
                 whereLeft: null,
@@ -475,56 +455,38 @@ export function ReportForm({ type }: ReportFormProps) {
         )}
       </div>
 
-      {/* Location - Zone */}
+      {/* Location — one flat list. The zone step was removed in P1-5: a
+          location already implies its zone, so asking for both was two taps
+          for a field no user ever sees. */}
       <div className="form-section" style={{ animationDelay: "0.1s" }}>
         <div className="form-label">
           {type === "found" ? t("form.q.where.found") : t("form.q.where.lost")}
         </div>
         <div className="chip-grid">
-          {ZONE_OPTIONS.map((zone) => (
+          {LOCATION_OPTIONS.map((spot) => (
             <button
-              key={zone.value}
+              key={spot.value}
               type="button"
-              aria-pressed={formData.zone === zone.value}
-              className={`chip-form ${formData.zone === zone.value ? accentClass : ""}`}
-              onClick={() => selectChip("zone", zone.value)}
+              aria-pressed={formData.spot === spot.value}
+              className={`chip-form ${formData.spot === spot.value ? accentClass : ""}`}
+              onClick={() => selectSpot(spot.value)}
             >
-              {zone.label}
+              {spot.label}
             </button>
           ))}
         </div>
-
-        {/* Spot selection */}
-        {formData.zone && formData.zone !== "unknown" && (
-          <div className="mt-3">
-            <div className="form-sublabel">More specifically…</div>
-            <div className="chip-grid">
-              {spotOptions.map((spot) => (
-                <button
-                  key={spot.value}
-                  type="button"
-                  aria-pressed={formData.spot === spot.value}
-                  className={`chip-form ${formData.spot === spot.value ? accentClass : ""}`}
-                  onClick={() => selectSpot(spot.value)}
-                >
-                  {spot.label}
-                </button>
-              ))}
-            </div>
-            {formData.spot === "other" && (
-              <input
-                type="text"
-                className={`text-input mt-3 ${isTeal ? "text-input--teal" : "text-input--red"}`}
-                placeholder={t("form.label.whereExactly")}
-                maxLength={80}
-                value={formData.customSpot}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, customSpot: e.target.value }))
-                }
-                style={{ minHeight: "unset", padding: "0.6rem 0.9rem" }}
-              />
-            )}
-          </div>
+        {formData.spot === LOCATION_OTHER && (
+          <input
+            type="text"
+            className={`text-input mt-3 ${isTeal ? "text-input--teal" : "text-input--red"}`}
+            placeholder={t("form.label.whereExactly")}
+            maxLength={80}
+            value={formData.customSpot}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, customSpot: e.target.value }))
+            }
+            style={{ minHeight: "unset", padding: "0.6rem 0.9rem" }}
+          />
         )}
         {errors.location && (
           <div className="field-error visible" role="alert">Please select a location.</div>

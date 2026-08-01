@@ -46,7 +46,7 @@ npm install
 1. `supabase/schema.sql` — tables, enums, RLS policies, grants, triggers, RPCs
 2. `supabase/storage-policies.sql` — `item-photos` bucket policies
 
-`schema.sql` already folds in every migration through `006`, and records them
+`schema.sql` already folds in every migration through `008`, and records them
 in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 
 **Existing database.** Leave `schema.sql` alone and apply the numbered files in
