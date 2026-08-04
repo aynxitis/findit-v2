@@ -83,6 +83,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ---
 
+## Known debt
+
+**Claims are immediate, not negotiated.** Pressing "Yes, this is mine" marks
+the item claimed straight away and reveals the poster's email. The poster has
+no say in it — their only recourse is the "Undo claim" button on `/profile`,
+which puts the item back on the board and notifies the claimer.
+
+The correct design is a pending → accept/reject flow, where a claim is a
+request the poster approves before any contact details change hands. That is
+deliberately out of scope for this cycle. Until it lands, the guard rails are
+the reversibility above and a limit of 5 claims per hour per user, enforced
+inside `claim_item()`.
+
+---
+
 ## Branch Structure
 
 | Branch | Purpose |
