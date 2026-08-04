@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
@@ -9,6 +9,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils/format";
+
+/** The half of claim_item()'s payload that carries the poster's contact details. */
+interface PosterContact {
+  poster_email?: string | null;
+  poster_name?: string | null;
+}
 
 interface ClaimModalProps {
   item: Item | null;
@@ -22,7 +28,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [contact, setContact] = useState<PosterContact | null>(null);
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
@@ -30,10 +36,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
       setLoading(false);
       setError(null);
       setSuccess(false);
-      if (closeTimerRef.current !== null) {
-        clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = null;
-      }
+      setContact(null);
     }
   }, [open, item?.id]);
 
@@ -63,7 +66,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         throw new Error("Failed to claim item. Please try again.");
       }
 
-      const result = data as { success: boolean; error?: string };
+      const result = data as { success: boolean; error?: string } & PosterContact;
 
       if (!result.success) {
         const errorMessages: Record<string, string> = {
@@ -75,13 +78,12 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         throw new Error(errorMessages[result.error || ""] || "Failed to claim item.");
       }
 
+      setContact({ poster_email: result.poster_email, poster_name: result.poster_name });
       setSuccess(true);
       onClaimSuccess?.();
 
-      closeTimerRef.current = setTimeout(() => {
-        setSuccess(false);
-        onOpenChange(false);
-      }, 2000);
+      // No auto-close: the contact details are only revealed now, and the
+      // modal is the only place they appear. Dismissal is the X button.
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to claim item");
     } finally {
@@ -90,12 +92,9 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
   };
 
   const handleClose = () => {
-    if (closeTimerRef.current !== null) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
     setError(null);
     setSuccess(false);
+    setContact(null);
     onOpenChange(false);
   };
 
@@ -147,13 +146,17 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
 
           <div className="mt-3">
             <div className="text-xs uppercase tracking-wide text-muted mb-1">Poster info</div>
-            <div className="font-medium">{item.user_name || "ESTIN Student"}</div>
-            {item.user_email && (
+            <div className="font-medium">
+              {contact?.poster_name || item.user_name || "ESTIN Student"}
+            </div>
+            {/* Contact details come from claim_item()'s return value and appear
+                only once the claim has actually succeeded. */}
+            {success && contact?.poster_email && (
               <a
-                href={`mailto:${item.user_email}`}
+                href={`mailto:${contact.poster_email}`}
                 className="text-sm text-teal hover:underline"
               >
-                {item.user_email}
+                {contact.poster_email}
               </a>
             )}
           </div>
