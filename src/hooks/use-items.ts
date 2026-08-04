@@ -7,6 +7,13 @@ import type { Item, ItemType } from "@/lib/types/item";
 
 const FETCH_LIMIT = 100;
 
+// Migration 004 revoked the table-level SELECT grant on public.items and
+// re-granted readable columns one by one, so `select("*")` now fails outright.
+// user_email is deliberately absent: it is unreadable by `authenticated` and
+// reaches a claimer only through claim_item()'s return value.
+const ITEM_COLUMNS =
+  "id, type, category, location, zone, where_left, date, description, photo_url, status, user_id, user_name, created_at";
+
 export interface UseItemsOptions {
   type?: ItemType;
   category?: string | null;
@@ -45,7 +52,7 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
       try {
         let query = supabase
           .from("items")
-          .select("*")
+          .select(ITEM_COLUMNS)
           .order("created_at", { ascending: false })
           .limit(FETCH_LIMIT);
 
@@ -164,7 +171,7 @@ export function useItem(itemId: string | null) {
     async function fetchItem() {
       const { data, error: fetchError } = await supabase
         .from("items")
-        .select("*")
+        .select(ITEM_COLUMNS)
         .eq("id", itemId)
         .single();
 
