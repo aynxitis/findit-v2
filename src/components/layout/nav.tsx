@@ -65,24 +65,12 @@ export function Nav({ minimal = false }: NavProps) {
                 </button>
               </>
             ) : (
-              <>
-                <button
-                  onClick={() => setShowSignInModal(true)}
-                  className="btn-primary"
-                >
-                  {t("nav.signIn")}
-                </button>
-                <Link href="/profile" className="nav-avatar" aria-label={t("nav.profile")}>
-                  <svg viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="12" className="avatar-bg" />
-                    <circle cx="12" cy="9" r="3.5" className="avatar-icon" />
-                    <path
-                      d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
-                      className="avatar-icon"
-                    />
-                  </svg>
-                </Link>
-              </>
+              <button
+                onClick={() => setShowSignInModal(true)}
+                className="btn-primary"
+              >
+                {t("nav.signIn")}
+              </button>
             )}
           </div>
         )}

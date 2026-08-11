@@ -34,9 +34,7 @@ export interface User {
   name: string;
   email: string;
   photo?: string;
-  verified: boolean;
   banned?: boolean;
-  bio?: string;
   joined_at: string | null;
 }
 
