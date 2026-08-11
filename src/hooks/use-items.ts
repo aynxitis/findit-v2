@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { CATEGORY_LABELS, LOCATION_LABELS } from "@/lib/constants/labels";
+import { CATEGORY_LABELS, LOCATION_LABELS } from "@/lib/taxonomy";
 import type { Item, ItemType } from "@/lib/types/item";
 
 const FETCH_LIMIT = 100;

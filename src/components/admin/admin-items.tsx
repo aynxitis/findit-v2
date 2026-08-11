@@ -9,7 +9,7 @@ import {
   CATEGORY_ICONS,
   LOCATION_LABELS,
   CATEGORIES,
-} from "@/lib/constants/labels";
+} from "@/lib/taxonomy";
 import { formatTimestamp } from "@/lib/utils/format";
 import type { Item, User as UserType } from "@/lib/types/item";
 import {
@@ -281,7 +281,7 @@ export function AdminItems() {
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={selectCls}>
               <option value="">All Categories</option>
               {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+                <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
               ))}
             </select>
             {(filterType || filterStatus || filterCategory || filterSearch) && (

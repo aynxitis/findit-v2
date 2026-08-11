@@ -1,6 +1,6 @@
 "use client";
 
-import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/constants/labels";
+import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS, locationIcon } from "@/lib/taxonomy";
 import type { ItemType } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +51,7 @@ export function ItemFilters({
               className={cn("chip", activeLocation === value && selectedClass)}
               onClick={() => onLocationChange(activeLocation === value ? null : value)}
             >
-              {getLocationIcon(value)} {label}
+              {locationIcon(value)} {label}
             </button>
           ))}
         </div>
@@ -65,15 +65,3 @@ export function ItemFilters({
   );
 }
 
-function getLocationIcon(location: string): string {
-  const icons: Record<string, string> = {
-    library: "\uD83D\uDCDA",
-    foyer: "\uD83E\uDE91",
-    td_halls: "\uD83D\uDEAA",
-    tp_halls: "\uD83D\uDD2C",
-    restau: "\uD83C\uDF7D\uFE0F",
-    res_foyer: "\uD83E\uDE91",
-    unknown: "\u2753",
-  };
-  return icons[location] || "\uD83D\uDCCD";
-}

@@ -5,16 +5,17 @@ import { X } from "lucide-react";
 import {
   CATEGORIES,
   ZONES,
-  WHERE_LEFT_OPTIONS,
-  LOCATION_LABELS,
-} from "@/lib/constants/labels";
-import type { Item, ItemCategory, ItemLocation, ItemZone, ItemWhereLeft } from "@/lib/types/item";
+  WHERE_LEFT,
+  locationLabel,
+  locationsForZone,
+} from "@/lib/taxonomy";
+import type { Item, ItemCategory, KnownLocation, ItemZone, ItemWhereLeft } from "@/lib/types/item";
 
 interface ModalFormState {
   type: "found" | "lost";
   category: ItemCategory | "";
   zone: ItemZone | "";
-  location: ItemLocation | "";
+  location: KnownLocation | "";
   where_left: ItemWhereLeft | "";
   date: string;
   description: string;
@@ -29,7 +30,7 @@ export interface AdminItemSaveData {
   type: "found" | "lost";
   category: ItemCategory | "";
   zone: ItemZone | null;
-  location: ItemLocation | "";
+  location: KnownLocation | "";
   where_left: ItemWhereLeft | null;
   date: string;
   description: string | null;
@@ -78,7 +79,7 @@ function itemToForm(item: Item): ModalFormState {
     type: item.type,
     category: item.category ?? "",
     zone: item.zone ?? "",
-    location: (item.location ?? "") as ItemLocation | "",
+    location: (item.location ?? "") as KnownLocation | "",
     where_left: item.where_left ?? "",
     date: item.date ?? today,
     description: item.description ?? "",
@@ -102,11 +103,7 @@ export function AdminItemModal({
   );
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  const availableLocations = useMemo(() => {
-    if (form.zone === "school") return ["library", "foyer", "td_halls", "tp_halls"];
-    if (form.zone === "residence") return ["restau", "res_foyer"];
-    return Object.keys(LOCATION_LABELS);
-  }, [form.zone]);
+  const availableLocations = useMemo(() => locationsForZone(form.zone), [form.zone]);
 
   function set<K extends keyof ModalFormState>(key: K, value: ModalFormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -117,7 +114,7 @@ export function AdminItemModal({
   }
 
   function handleZoneChange(zone: ItemZone | "") {
-    setForm((prev) => ({ ...prev, zone, location: "" as ItemLocation | "" }));
+    setForm((prev) => ({ ...prev, zone, location: "" as KnownLocation | "" }));
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -195,7 +192,7 @@ export function AdminItemModal({
               <select value={form.category} onChange={(e) => set("category", e.target.value as ItemCategory | "")} className={selectCls}>
                 <option value="">Select…</option>
                 {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
+                  <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
                 ))}
               </select>
             </label>
@@ -218,16 +215,16 @@ export function AdminItemModal({
               <select value={form.zone} onChange={(e) => handleZoneChange(e.target.value as ItemZone | "")} className={selectCls}>
                 <option value="">Any / Not sure</option>
                 {ZONES.map((z) => (
-                  <option key={z.value} value={z.value}>{z.label}</option>
+                  <option key={z.slug} value={z.slug}>{z.icon} {z.label}</option>
                 ))}
               </select>
             </label>
             <label className="flex flex-col gap-1">
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Location *</span>
-              <select value={form.location} onChange={(e) => set("location", e.target.value as ItemLocation | "")} className={selectCls}>
+              <select value={form.location} onChange={(e) => set("location", e.target.value as KnownLocation | "")} className={selectCls}>
                 <option value="">Select…</option>
                 {availableLocations.map((loc) => (
-                  <option key={loc} value={loc}>{LOCATION_LABELS[loc] ?? loc}</option>
+                  <option key={loc} value={loc}>{locationLabel(loc)}</option>
                 ))}
               </select>
             </label>
@@ -239,8 +236,8 @@ export function AdminItemModal({
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Where Left *</span>
               <select value={form.where_left} onChange={(e) => set("where_left", e.target.value as ItemWhereLeft | "")} className={selectCls}>
                 <option value="">Select…</option>
-                {WHERE_LEFT_OPTIONS.map((w) => (
-                  <option key={w.value} value={w.value}>{w.label}</option>
+                {WHERE_LEFT.map((w) => (
+                  <option key={w.slug} value={w.slug}>{w.icon} {w.optionLabel}</option>
                 ))}
               </select>
             </label>

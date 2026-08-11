@@ -10,15 +10,16 @@ import type { RateLimitResult } from "@/lib/types/api";
 import {
   CATEGORIES,
   ZONES,
-  WHERE_LEFT_OPTIONS,
-  SPOT_OPTIONS,
+  WHERE_LEFT,
   CATEGORY_LABELS,
-  LOCATION_LABELS,
   WHERE_LEFT_LABELS,
   VALID_CATEGORIES,
-  VALID_LOCATIONS,
   VALID_WHERE_LEFT,
-} from "@/lib/constants/labels";
+  KNOWN_LOCATIONS,
+  OTHER_SPOT,
+  locationLabel,
+  spotOptionsForZone,
+} from "@/lib/taxonomy";
 
 const RATE_LIMIT_TIMEOUT_MS = 15000;
 const PHOTO_UPLOAD_TIMEOUT_MS = 90000;
@@ -170,15 +171,15 @@ export function ReportForm({ type }: ReportFormProps) {
   const getLocationValue = (): string | null => {
     if (formData.zone === "unknown") return "unknown";
     if (!formData.spot) return null;
-    if (formData.spot === "other") return formData.customSpot.trim() || null;
+    if (formData.spot === OTHER_SPOT.slug) return formData.customSpot.trim() || null;
     return formData.spot;
   };
 
   const getLocationLabel = (): string => {
     if (formData.zone === "unknown") return "Not sure";
     if (!formData.spot) return "";
-    if (formData.spot === "other") return formData.customSpot.trim() || "";
-    return LOCATION_LABELS[formData.spot] || formData.spot;
+    if (formData.spot === OTHER_SPOT.slug) return formData.customSpot.trim() || "";
+    return locationLabel(formData.spot);
   };
 
   // Validation
@@ -196,10 +197,10 @@ export function ReportForm({ type }: ReportFormProps) {
     }
 
     const loc = getLocationValue();
-    if (loc && !VALID_LOCATIONS.includes(loc) && formData.spot !== "other") {
+    if (loc && !KNOWN_LOCATIONS.includes(loc) && formData.spot !== OTHER_SPOT.slug) {
       newErrors.location = true;
     }
-    if (formData.spot === "other" && loc && loc.length > 80) {
+    if (formData.spot === OTHER_SPOT.slug && loc && loc.length > 80) {
       newErrors.location = true;
     }
 
@@ -371,7 +372,7 @@ export function ReportForm({ type }: ReportFormProps) {
 
   // Spot options based on zone
   const spotOptions = formData.zone && formData.zone !== "unknown"
-    ? SPOT_OPTIONS[formData.zone as keyof typeof SPOT_OPTIONS]
+    ? spotOptionsForZone(formData.zone)
     : [];
 
   if (showSuccess && submittedData) {
@@ -458,13 +459,13 @@ export function ReportForm({ type }: ReportFormProps) {
         <div className="chip-grid">
           {CATEGORIES.map((cat) => (
             <button
-              key={cat.value}
+              key={cat.slug}
               type="button"
-              aria-pressed={formData.category === cat.value}
-              className={`chip-form ${formData.category === cat.value ? accentClass : ""}`}
-              onClick={() => selectChip("category", cat.value)}
+              aria-pressed={formData.category === cat.slug}
+              className={`chip-form ${formData.category === cat.slug ? accentClass : ""}`}
+              onClick={() => selectChip("category", cat.slug)}
             >
-              {cat.label}
+              {cat.icon} {cat.label}
             </button>
           ))}
         </div>
@@ -481,13 +482,13 @@ export function ReportForm({ type }: ReportFormProps) {
         <div className="chip-grid">
           {ZONES.map((zone) => (
             <button
-              key={zone.value}
+              key={zone.slug}
               type="button"
-              aria-pressed={formData.zone === zone.value}
-              className={`chip-form ${formData.zone === zone.value ? accentClass : ""}`}
-              onClick={() => selectChip("zone", zone.value)}
+              aria-pressed={formData.zone === zone.slug}
+              className={`chip-form ${formData.zone === zone.slug ? accentClass : ""}`}
+              onClick={() => selectChip("zone", zone.slug)}
             >
-              {zone.label}
+              {zone.icon} {zone.label}
             </button>
           ))}
         </div>
@@ -499,13 +500,13 @@ export function ReportForm({ type }: ReportFormProps) {
             <div className="chip-grid">
               {spotOptions.map((spot) => (
                 <button
-                  key={spot.value}
+                  key={spot.slug}
                   type="button"
-                  aria-pressed={formData.spot === spot.value}
-                  className={`chip-form ${formData.spot === spot.value ? accentClass : ""}`}
-                  onClick={() => selectSpot(spot.value)}
+                  aria-pressed={formData.spot === spot.slug}
+                  className={`chip-form ${formData.spot === spot.slug ? accentClass : ""}`}
+                  onClick={() => selectSpot(spot.slug)}
                 >
-                  {spot.label}
+                  {spot.icon} {spot.shortLabel}
                 </button>
               ))}
             </div>
@@ -534,15 +535,15 @@ export function ReportForm({ type }: ReportFormProps) {
         <div className="form-section" style={{ animationDelay: "0.15s" }}>
           <div className="form-label">Where is it now?</div>
           <div className="chip-grid">
-            {WHERE_LEFT_OPTIONS.map((opt) => (
+            {WHERE_LEFT.map((opt) => (
               <button
-                key={opt.value}
+                key={opt.slug}
                 type="button"
-                aria-pressed={formData.whereLeft === opt.value}
-                className={`chip-form ${formData.whereLeft === opt.value ? accentClass : ""}`}
-                onClick={() => selectChip("whereLeft", opt.value)}
+                aria-pressed={formData.whereLeft === opt.slug}
+                className={`chip-form ${formData.whereLeft === opt.slug ? accentClass : ""}`}
+                onClick={() => selectChip("whereLeft", opt.slug)}
               >
-                {opt.label}
+                {opt.icon} {opt.optionLabel}
               </button>
             ))}
           </div>

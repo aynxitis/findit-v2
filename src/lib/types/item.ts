@@ -1,23 +1,16 @@
+// The taxonomy unions are derived from src/lib/taxonomy.ts and re-exported
+// here so existing importers keep working. Do not redeclare them.
+import type {
+  ItemCategory,
+  ItemZone,
+  ItemWhereLeft,
+  KnownLocation,
+} from "@/lib/taxonomy";
+
+export type { ItemCategory, ItemZone, ItemWhereLeft, KnownLocation };
+
 export type ItemType = "found" | "lost";
 export type ItemStatus = "open" | "claimed";
-export type ItemCategory =
-  | "keys"
-  | "card"
-  | "phone"
-  | "bag"
-  | "clothing"
-  | "electronics"
-  | "other";
-export type ItemLocation =
-  | "library"
-  | "foyer"
-  | "td_halls"
-  | "tp_halls"
-  | "restau"
-  | "res_foyer"
-  | "unknown";
-export type ItemZone = "school" | "residence" | "unknown";
-export type ItemWhereLeft = "with_me" | "admin" | "left_there";
 
 export interface Item {
   id: string;
