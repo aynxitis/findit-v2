@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Nav, Footer, BackgroundBlobs } from "@/components/layout";
+import { AuthNotice } from "@/components/home/auth-notice";
 import { StatsSection } from "@/components/home/stats-section";
 import { ScrollingStrip } from "@/components/home/scrolling-strip";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
@@ -11,6 +13,11 @@ export default function Home() {
       <Nav />
 
       <main className="flex-1">
+        {/* Auth rejection from /auth/callback, if any */}
+        <Suspense fallback={null}>
+          <AuthNotice />
+        </Suspense>
+
         {/* Hero Section */}
         <section className="relative z-5 flex flex-col items-center text-center px-6 py-16 gap-5">
           {/* Live badge */}

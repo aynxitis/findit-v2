@@ -33,12 +33,12 @@ export async function GET(request: Request) {
       // Verify domain
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user?.email && !user.email.endsWith("@estin.dz")) {
+      // Lowercased first: an address that arrives as Student@ESTIN.DZ is the
+      // same account, and endsWith() on the raw value would reject it.
+      if (user?.email && !user.email.toLowerCase().endsWith("@estin.dz")) {
         // Non-estin.dz account — sign out and redirect with error
         await supabase.auth.signOut();
-        return NextResponse.redirect(
-          `${origin}/?error=Only+@estin.dz+accounts+are+allowed`
-        );
+        return NextResponse.redirect(`${origin}/?error=domain`);
       }
 
       const forwardedHost = request.headers.get("x-forwarded-host");
