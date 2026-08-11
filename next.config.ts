@@ -1,6 +1,18 @@
 import type { NextConfig } from "next";
 
-const SUPABASE_HOST = "dfvlcuhrktyhvnfmwnnv.supabase.co";
+// Derived from the Supabase URL rather than hardcoded, so pointing the app at
+// a different project is a single env change. Both the CSP and
+// images.remotePatterns below depend on it, and a stale literal here fails as
+// blocked images and blocked realtime rather than as a build error.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+if (!supabaseUrl) {
+  throw new Error(
+    "NEXT_PUBLIC_SUPABASE_URL is not set. next.config.ts needs it to build the CSP and images.remotePatterns."
+  );
+}
+
+const SUPABASE_HOST = new URL(supabaseUrl).hostname;
 
 // Content Security Policy.
 // - 'unsafe-inline' and 'unsafe-eval' are required by Next.js runtime/JSON-LD.

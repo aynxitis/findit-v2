@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans } from "next/font/google";
 import { AuthProvider } from "@/components/auth";
+import { SITE_URL } from "@/lib/constants/config";
 import "./globals.css";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://findit-estin.vercel.app";
 
 const syne = Syne({
   variable: "--font-display",
