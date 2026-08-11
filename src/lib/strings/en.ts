@@ -176,20 +176,23 @@ export const en = {
   "privacy.collect.name.strong": "Full name",
   "privacy.collect.name.rest": " \u2014 to display on your posts and profile.",
   "privacy.collect.email.strong": "Email address",
-  // No leading space, and that is not a typo here \u2014 see the note below.
   "privacy.collect.email.rest":
-    "\u2014 to verify you're an ESTIN student (must end in @estin.dz) and to allow item owners to contact you.",
+    " \u2014 to verify you're an ESTIN student (must end in @estin.dz) and to allow item owners to contact you.",
   "privacy.collect.photo.strong": "Profile picture",
   "privacy.collect.photo.rest":
-    "\u2014 displayed in the navigation bar while you're signed in.",
-  // PRE-EXISTING DEFECT, PRESERVED DELIBERATELY.
-  // All three of these paragraphs are written `<strong>\u2026</strong> \u2014 text` in
-  // the source, but JSX drops the leading space of a text node that wraps
-  // across source lines and keeps it when the node fits on one. "Full name"
-  // fits on one line, so it renders "Full name \u2014 to display"; the other two
-  // wrap, so they render "Email address\u2014 to verify" with no space. The live
-  // site has always looked like this. Extraction would have silently fixed it,
-  // which is a copy change this step does not license. Reported instead.
+    " \u2014 displayed in the navigation bar while you're signed in.",
+  // The leading space on those two is REQUIRED. Do not remove it.
+  //
+  // All three "What we collect" paragraphs are written `<strong>\u2026</strong> \u2014
+  // text` in the source, but JSX drops the leading space of a text node that
+  // wraps across source lines and keeps it when the node fits on one. "Full
+  // name" fits on one line and rendered correctly; the other two wrapped, so
+  // production rendered "Email address\u2014 to verify" and "Profile picture\u2014
+  // displayed" with the space missing.
+  //
+  // That was a defect, not house style, and it is corrected here \u2014 all three
+  // now read consistently. It is recorded so nobody restores the missing
+  // space believing the old output was canonical.
   "privacy.collect.outro":
     "We do not collect passwords. We do not access any other Google account data.",
   "privacy.why.title": "Why we collect it",
