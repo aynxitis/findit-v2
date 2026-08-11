@@ -712,9 +712,16 @@ ON CONFLICT (filename) DO NOTHING;
 -- ──────────────────────────────────────────────────────────────────────────────
 -- Run these via Supabase dashboard or storage API:
 --
--- 1. Create bucket: item-photos (public)
+-- 1. Create bucket: item-photos — PRIVATE (public = false)
 -- 2. Max file size: 5MB
 -- 3. Allowed MIME types: image/jpeg, image/png, image/webp
+--
+-- This file said "(public)" until 2026-08-11 and was wrong: production has had
+-- storage.buckets.public = false since the original P2-2 run. A fresh install
+-- created from the old text would have been public, and the app would have
+-- worked anyway — it reads through createSignedUrl(), which signs against
+-- either — while quietly leaving every item photo world-readable by URL. That
+-- is the failure this line exists to prevent, so do not "simplify" it back.
 --
 -- Storage policies (set in dashboard):
 --   SELECT (download): authenticated users can read all files

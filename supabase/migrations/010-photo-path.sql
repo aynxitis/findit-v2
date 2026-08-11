@@ -8,15 +8,38 @@
 --   1. Deletion code string-slices the URL back to a path against the marker
 --      "/object/public/item-photos/", duplicated in two places.
 --   2. It hardcodes the bucket being public. A photo of a found student card
---      carries a real name, ID number and face, and is currently fetchable by
---      anyone holding the URL, permanently, surviving deletion of the item.
+--      carries a real name, ID number and face, and was fetchable by anyone
+--      holding the URL, permanently, surviving deletion of the item.
 --
--- This migration adds the path. It does NOT flip the bucket — that is step 4
--- of P2-2 and happens in the dashboard only after the app is deployed and
--- verified reading signed URLs. Flipping early breaks every existing photo.
+-- This migration adds the path. It does not touch the bucket.
 --
--- photo_url is deliberately left in place. Dropping it is a later migration
--- (step 5), so a rollback of the app code still renders images.
+-- ---------------------------------------------------------------------------
+-- CORRECTED 2026-08-11 — the paragraph that stood here was wrong, and the
+-- correction matters more than the original text.
+--
+-- It said the bucket flip was "step 4 of P2-2", to be done in the dashboard
+-- only after the app was deployed and verified reading signed URLs, and warned
+-- that flipping early breaks every existing photo.
+--
+-- The flip had ALREADY happened: storage.buckets.public = false for
+-- item-photos, confirmed against production. It was done in the dashboard
+-- during the original P2-2 run, outside the migration sequence, so it was never
+-- in git and survived every reset of the code that assumed otherwise. The
+-- warning was accurate about the consequence and wrong about the tense — every
+-- photo served from /object/public/ has been 404ing on the live board since.
+--
+-- There is no flip left to perform. Do not add one.
+--
+-- The lesson, recorded in audits/DECISIONS.md: the repo is fact for code, the
+-- live system is fact for infrastructure. Bucket visibility, dashboard
+-- settings and anything else changed outside a migration cannot be read out of
+-- these files, however confidently they are written.
+-- ---------------------------------------------------------------------------
+--
+-- photo_url is left in place; dropping it is a later migration. Note that its
+-- original justification — "so a rollback of the app code still renders
+-- images" — no longer holds either, for the same reason: against a private
+-- bucket those public URLs render nothing. The column is now inert history.
 --
 -- ---------------------------------------------------------------------------
 -- Percent-encoding: this is the trap.

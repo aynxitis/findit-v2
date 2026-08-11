@@ -8,8 +8,14 @@
 -- photos under their own {type}-items/{uid}/ prefix.
 --
 -- Prerequisites:
---   1. Bucket "item-photos" exists (public, 5 MB max, image/* MIME types).
+--   1. Bucket "item-photos" exists — PRIVATE (public = false), 5 MB max,
+--      image/* MIME types. This line said "public" until 2026-08-11 and was
+--      wrong; production has been private since the original P2-2 run.
 --   2. Drop any existing policies on storage.objects for this bucket first.
+--
+-- The SELECT policy below is what makes a private bucket usable: it is the
+-- grant createSignedUrl() checks before issuing a URL. On a public bucket it
+-- was close to decorative, since the object was readable without it.
 -- ============================================================================
 
 
