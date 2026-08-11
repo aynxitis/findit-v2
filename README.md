@@ -46,7 +46,7 @@ npm install
 1. `supabase/schema.sql` — tables, enums, RLS policies, grants, triggers, RPCs
 2. `supabase/storage-policies.sql` — `item-photos` bucket policies
 
-`schema.sql` already folds in every migration through `012`, and records them
+`schema.sql` already folds in every migration through `013`, and records them
 in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 
 **Existing database.** Leave `schema.sql` alone and apply the numbered files in
@@ -67,6 +67,7 @@ in `public.schema_migrations`. **Do not** then replay `supabase/migrations/`.
 | `010-photo-path.sql` | Adds `items.photo_path`, backfilled from `photo_url` |
 | `011-resolved-status.sql` | Adds `resolved` status and `resolve_item()`; `claimed` now means a claim row exists |
 | `012-lock-status-column.sql` | Revokes UPDATE on `items.status`; transitions only via RPC |
+| `013-lock-insert-columns.sql` | `ref` becomes GENERATED ALWAYS; a trigger stamps `user_email`, `user_name`, `status`, `created_at`; INSERT is revoked from `anon` and column-limited for `authenticated` |
 
 Optional: `supabase/cleanup-expired.sql` (90-day cleanup helper — schedule via `pg_cron` if desired).
 
@@ -160,6 +161,21 @@ slugs are globally unique, so `zone` carries no data-level information and the
 column can eventually go; but the chip labels collide — `foyer` and `res_foyer`
 both render as "Foyer" — so a flat list must use the full labels
 ("Foyer (école)" / "Foyer (résidence)"), not the short ones.
+
+**`src/lib/validations/item.ts` is entirely unreferenced, and now actively
+misleading.** Nothing outside the file imports `reportItemSchema`, `itemSchema`,
+`validateReportItem` or either type export; the report form validates inline
+instead.
+
+`itemSchema` is the part that misleads. It models the old client-supplied insert
+payload — `user_email`, `user_name`, `status` and `created_at` included — and
+migration `013` revoked INSERT on exactly those columns, so the shape it
+describes is now one the database rejects with `42501`. Anyone who reaches for
+it as a reference will build a payload that cannot be inserted.
+
+It is pre-existing dead code rather than a leftover of any recent change, and it
+is deliberately still here: the scheduled deletion list was closed and not
+reopened. Recorded so the file is not mistaken for the current contract.
 
 ---
 

@@ -257,6 +257,9 @@ export function ReportForm({ type }: ReportFormProps) {
       }
 
       const locationValue = getLocationValue();
+      // user_email, user_name, status and created_at are deliberately absent:
+      // items_stamp_insert stamps them from the JWT, and migration 013 revokes
+      // INSERT on those columns from `authenticated`, so sending them is a 42501.
       const itemData = {
         type,
         category: VALID_CATEGORIES.includes(formData.category!) ? formData.category : null,
@@ -268,10 +271,7 @@ export function ReportForm({ type }: ReportFormProps) {
         date: formData.date,
         description: formData.description.trim().slice(0, 400) || null,
         photo_url: null as string | null,
-        user_email: user.email,
-        user_name: user.user_metadata?.full_name || null,
         user_id: user.id,
-        status: "open",
       };
 
       // Secondary validation
