@@ -11,6 +11,7 @@ import {
   CATEGORIES,
 } from "@/lib/taxonomy";
 import { formatTimestamp } from "@/lib/utils/format";
+import { t } from "@/lib/strings";
 import type { Item, User as UserType } from "@/lib/types/item";
 import {
   Plus, Pencil, Trash2, RefreshCw, ToggleLeft, ToggleRight,
@@ -51,12 +52,12 @@ export function AdminItems() {
     setLoading(true);
     try {
       const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      if (!token) throw new Error(t("admin.error.notAuthenticated"));
 
       const res = await fetch("/api/admin/overview", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) throw new Error(t("admin.error.requestFailed"));
 
       const payload = (await res.json()) as { items?: Item[]; users?: UserType[] };
       setItems(payload.items || []);
@@ -102,7 +103,7 @@ export function AdminItems() {
     setSaveError(null);
     try {
       const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      if (!token) throw new Error(t("admin.error.notAuthenticated"));
 
       if (editingItem) {
         const res = await fetch(`/api/admin/items/${editingItem.id}`, {
@@ -110,7 +111,7 @@ export function AdminItems() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error("Update failed");
+        if (!res.ok) throw new Error(t("admin.error.updateFailed"));
         setItems((prev) =>
           prev.map((i) => (i.id === editingItem.id ? { ...i, ...(data as Partial<Item>) } : i))
         );
@@ -120,13 +121,13 @@ export function AdminItems() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify(data),
         });
-        if (!res.ok) throw new Error("Create failed");
+        if (!res.ok) throw new Error(t("admin.error.createFailed"));
         await loadData();
       }
       setModalOpen(false);
       setEditingItem(null);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Save failed");
+      setSaveError(err instanceof Error ? err.message : t("admin.error.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -148,7 +149,7 @@ export function AdminItems() {
         prev.map((i) => (i.id === item.id ? { ...i, status: newStatus } : i))
       );
     } catch {
-      setActionError("Failed to update item status. Please try again.");
+      setActionError(t("admin.error.statusUpdate"));
     } finally {
       setActionLoading(null);
     }
@@ -168,7 +169,7 @@ export function AdminItems() {
       setItems((prev) => prev.filter((i) => i.id !== deleteTarget));
       setDeleteTarget(null);
     } catch {
-      setActionError("Failed to delete item. Please try again.");
+      setActionError(t("admin.error.deleteItem"));
     } finally {
       setDeleteLoading(false);
     }
@@ -189,7 +190,7 @@ export function AdminItems() {
         prev.map((u) => (u.id === userId ? { ...u, banned: !currentlyBanned } : u))
       );
     } catch {
-      setActionError("Failed to update user ban status. Please try again.");
+      setActionError(t("admin.error.banUser"));
     } finally {
       setActionLoading(null);
     }
@@ -198,7 +199,7 @@ export function AdminItems() {
   if (verifying) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <p className="text-[var(--muted)]">Loading…</p>
+        <p className="text-[var(--muted)]">{t("admin.loading")}</p>
       </div>
     );
   }
@@ -206,8 +207,8 @@ export function AdminItems() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold text-red mb-4">Access Denied</h1>
-        <p className="text-[var(--muted)]">You don&apos;t have permission to access this page.</p>
+        <h1 className="font-display text-3xl font-bold text-red mb-4">{t("admin.denied.title")}</h1>
+        <p className="text-[var(--muted)]">{t("admin.denied.body")}</p>
       </div>
     );
   }
@@ -215,21 +216,21 @@ export function AdminItems() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="font-display text-3xl font-extrabold">Manage</h1>
+        <h1 className="font-display text-3xl font-extrabold">{t("admin.manage.title")}</h1>
         <button
           onClick={loadData}
           disabled={loading}
           className="font-display flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--border)] hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all text-sm font-semibold"
         >
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-          Refresh
+          {t("admin.refresh")}
         </button>
       </div>
 
       {actionError && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-red/20 bg-red/10 px-4 py-3 text-sm text-red font-display">
           <span>{actionError}</span>
-          <button onClick={() => setActionError(null)} className="shrink-0 hover:opacity-70 cursor-pointer" aria-label="Dismiss error">
+          <button onClick={() => setActionError(null)} className="shrink-0 hover:opacity-70 cursor-pointer" aria-label={t("admin.dismissError")}>
             {"\u2715"}
           </button>
         </div>
@@ -263,23 +264,23 @@ export function AdminItems() {
           <div className="flex flex-wrap gap-2 mb-5">
             <input
               type="text"
-              placeholder="Search UID, email, description…"
+              placeholder={t("admin.search.items")}
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
               className="flex-1 min-w-44 px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--foreground)]"
             />
             <select value={filterType} onChange={(e) => setFilterType(e.target.value as "" | "found" | "lost")} className={selectCls}>
-              <option value="">All Types</option>
-              <option value="found">Found</option>
-              <option value="lost">Lost</option>
+              <option value="">{t("admin.filter.allTypes")}</option>
+              <option value="found">{t("admin.filter.found")}</option>
+              <option value="lost">{t("admin.filter.lost")}</option>
             </select>
             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "" | "open" | "claimed")} className={selectCls}>
-              <option value="">All Statuses</option>
-              <option value="open">Open</option>
-              <option value="claimed">Claimed</option>
+              <option value="">{t("admin.filter.allStatuses")}</option>
+              <option value="open">{t("admin.filter.open")}</option>
+              <option value="claimed">{t("admin.filter.claimed")}</option>
             </select>
             <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className={selectCls}>
-              <option value="">All Categories</option>
+              <option value="">{t("admin.filter.allCategories")}</option>
               {CATEGORIES.map((c) => (
                 <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
               ))}
@@ -289,7 +290,7 @@ export function AdminItems() {
                 onClick={() => { setFilterType(""); setFilterStatus(""); setFilterCategory(""); setFilterSearch(""); }}
                 className="font-display px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] cursor-pointer transition-all font-semibold"
               >
-                Clear
+                {t("admin.clear")}
               </button>
             )}
             <button
@@ -297,26 +298,26 @@ export function AdminItems() {
               className="font-display flex items-center gap-2 px-4 py-2 rounded-xl bg-teal text-[var(--background)] font-semibold hover:-translate-y-0.5 cursor-pointer transition-all text-sm"
             >
               <Plus size={14} />
-              Add Item
+              {t("admin.addItem")}
             </button>
           </div>
 
           {loading ? (
-            <p className="text-[var(--muted)] py-8 text-center">Loading…</p>
+            <p className="text-[var(--muted)] py-8 text-center">{t("admin.loading")}</p>
           ) : filteredItems.length === 0 ? (
-            <p className="text-[var(--muted)] py-8 text-center">No items found.</p>
+            <p className="text-[var(--muted)] py-8 text-center">{t("admin.noItems")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--border)]">
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Type</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Category</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Location</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Status</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">User</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Date</th>
-                    <th className="font-display text-right py-3 px-2 text-xs font-bold uppercase tracking-wide">Actions</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.type")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.category")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.location")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.status")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.user")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.date")}</th>
+                    <th className="font-display text-right py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -346,16 +347,16 @@ export function AdminItems() {
                       </td>
                       <td className="py-3 px-2">
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => openEdit(item)} disabled={!!actionLoading} title="Edit item"
+                          <button onClick={() => openEdit(item)} disabled={!!actionLoading} title={t("admin.action.edit")}
                             className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                             <Pencil size={14} />
                           </button>
                           <button onClick={() => handleStatusToggle(item)} disabled={actionLoading === `status-${item.id}`}
-                            title={item.status === "open" ? "Mark as claimed" : "Mark as open"}
+                            title={item.status === "open" ? t("admin.action.markClaimed") : t("admin.action.markOpen")}
                             className="p-2 text-yellow hover:bg-yellow/10 rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                             {item.status === "open" ? <ToggleLeft size={14} /> : <ToggleRight size={14} />}
                           </button>
-                          <button onClick={() => setDeleteTarget(item.id)} disabled={!!actionLoading} title="Delete item"
+                          <button onClick={() => setDeleteTarget(item.id)} disabled={!!actionLoading} title={t("admin.action.deleteItem")}
                             className="p-2 text-red hover:bg-red/10 rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                             <Trash2 size={14} />
                           </button>
@@ -375,7 +376,7 @@ export function AdminItems() {
           <div className="flex flex-wrap gap-2 mb-5">
             <input
               type="text"
-              placeholder="Search name, email, UID…"
+              placeholder={t("admin.search.users")}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
               className="flex-1 min-w-44 px-3 py-2 rounded-xl bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--foreground)]"
@@ -385,25 +386,25 @@ export function AdminItems() {
                 onClick={() => setUserSearch("")}
                 className="font-display px-3 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--border)] cursor-pointer transition-all font-semibold"
               >
-                Clear
+                {t("admin.clear")}
               </button>
             )}
           </div>
 
           {loading ? (
-            <p className="text-[var(--muted)] py-8 text-center">Loading…</p>
+            <p className="text-[var(--muted)] py-8 text-center">{t("admin.loading")}</p>
           ) : filteredUsers.length === 0 ? (
-            <p className="text-[var(--muted)] py-8 text-center">No users found.</p>
+            <p className="text-[var(--muted)] py-8 text-center">{t("admin.noUsers")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--border)]">
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Name</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Email</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Status</th>
-                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Joined</th>
-                    <th className="font-display text-right py-3 px-2 text-xs font-bold uppercase tracking-wide">Actions</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.name")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.email")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.status")}</th>
+                    <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.joined")}</th>
+                    <th className="font-display text-right py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -413,9 +414,9 @@ export function AdminItems() {
                       <td className="py-3 px-2 text-[var(--muted)]">{u.email}</td>
                       <td className="py-3 px-2">
                         {u.banned ? (
-                          <span className="px-2 py-1 rounded-full text-xs bg-red/20 text-red">Banned</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-red/20 text-red">{t("admin.user.banned")}</span>
                         ) : (
-                          <span className="px-2 py-1 rounded-full text-xs bg-teal/20 text-teal">Active</span>
+                          <span className="px-2 py-1 rounded-full text-xs bg-teal/20 text-teal">{t("admin.user.active")}</span>
                         )}
                       </td>
                       <td className="py-3 px-2 text-[var(--muted)]">
@@ -426,7 +427,7 @@ export function AdminItems() {
                           <button
                             onClick={() => handleToggleBan(u.id, !!u.banned)}
                             disabled={actionLoading === `ban-${u.id}`}
-                            title={u.banned ? "Unban user" : "Ban user"}
+                            title={u.banned ? t("admin.action.unbanUser") : t("admin.action.banUser")}
                             className={`p-2 rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all ${
                               u.banned ? "text-teal hover:bg-teal/10" : "text-red hover:bg-red/10"
                             }`}
@@ -459,9 +460,9 @@ export function AdminItems() {
         open={!!deleteTarget}
         onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
         onConfirm={handleDeleteItem}
-        title="Delete Item"
-        message="Are you sure you want to permanently delete this item? This cannot be undone."
-        confirmText="Delete"
+        title={t("admin.delete.title")}
+        message={t("admin.delete.message")}
+        confirmText={t("admin.delete.confirm")}
         variant="danger"
         loading={deleteLoading}
       />

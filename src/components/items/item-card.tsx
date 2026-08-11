@@ -4,6 +4,7 @@ import { memo } from "react";
 import Image from "next/image";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import type { Item } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 
 const EXPIRY_DAYS = 90;
@@ -41,16 +42,16 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
   let badgeText: string;
   if (isClaimed) {
     badgeClass = "badge-claimed";
-    badgeText = "Claimed";
+    badgeText = t("itemCard.badge.claimed");
   } else if (expired) {
     badgeClass = "badge-expired";
-    badgeText = "Expired";
+    badgeText = t("itemCard.badge.expired");
   } else if (item.type === "found") {
     badgeClass = "badge-found";
-    badgeText = "Found";
+    badgeText = t("itemCard.badge.found");
   } else {
     badgeClass = "badge-lost";
-    badgeText = "Lost";
+    badgeText = t("itemCard.badge.lost");
   }
 
   const canClaim = !isClaimed && !isOwnPost && !expired;
@@ -109,23 +110,23 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       <div className="item-footer">
         {isClaimed ? (
           <button className="btn-claimed-disabled" disabled>
-            Already claimed
+            {t("itemCard.action.alreadyClaimed")}
           </button>
         ) : isOwnPost ? (
           <button className="btn-claimed-disabled" disabled>
-            Your post
+            {t("itemCard.action.ownPost")}
           </button>
         ) : expired ? (
           <button className="btn-claimed-disabled" disabled>
-            Post expired
+            {t("itemCard.action.expired")}
           </button>
         ) : item.type === "found" ? (
           <button className="btn-claim" onClick={handleClaimClick}>
-            This is mine {"\u2192"}
+            {t("itemCard.action.claimFound")} {"\u2192"}
           </button>
         ) : (
           <button className="btn-claim btn-claim-lost" onClick={handleClaimClick}>
-            I found this {"\u2192"}
+            {t("itemCard.action.claimLost")} {"\u2192"}
           </button>
         )}
       </div>

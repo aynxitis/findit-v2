@@ -3,6 +3,7 @@
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS, locationIcon } from "@/lib/taxonomy";
 import type { ItemType } from "@/lib/types/item";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/strings";
 
 interface ItemFiltersProps {
   activeType: ItemType;
@@ -27,7 +28,7 @@ export function ItemFilters({
     <div className="filters">
       {/* Category Chips */}
       <div className="filter-row">
-        <span className="filter-label">Category</span>
+        <span className="filter-label">{t("filters.category")}</span>
         <div className="chip-row">
           {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
             <button
@@ -43,7 +44,7 @@ export function ItemFilters({
 
       {/* Location Chips */}
       <div className="filter-row">
-        <span className="filter-label">Location</span>
+        <span className="filter-label">{t("filters.location")}</span>
         <div className="chip-row">
           {Object.entries(LOCATION_LABELS).map(([value, label]) => (
             <button
@@ -57,7 +58,7 @@ export function ItemFilters({
         </div>
         {(activeCategory || activeLocation) && (
           <button className="filter-clear" onClick={onClearFilters}>
-            Clear filters
+            {t("filters.clear")}
           </button>
         )}
       </div>

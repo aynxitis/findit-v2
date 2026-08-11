@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import { formatTimestamp } from "@/lib/utils/format";
 import type { Item } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 
 interface ProfileItemCardProps {
   item: Item;
@@ -64,7 +65,11 @@ export function ProfileItemCard({
                 : "bg-red text-white"
             )}
           >
-            {isClaimed ? "Resolved" : item.type === "found" ? "Found" : "Lost"}
+            {isClaimed
+              ? t("profileCard.badge.resolved")
+              : item.type === "found"
+              ? t("profileCard.badge.found")
+              : t("profileCard.badge.lost")}
           </span>
         </div>
         <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-xs">
@@ -91,7 +96,7 @@ export function ProfileItemCard({
             onClick={onDelete}
             className="py-2 px-4 rounded-xl bg-red text-white text-sm font-semibold font-display hover:bg-red/80 hover:-translate-y-0.5 cursor-pointer transition-all"
           >
-            Delete
+            {t("profileCard.delete")}
           </button>
           {isClaimed ? (
             <button
@@ -99,7 +104,7 @@ export function ProfileItemCard({
               disabled={unclaiming}
               className="flex-1 py-2 rounded-xl bg-yellow text-black text-sm font-semibold font-display hover:bg-yellow/80 hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
             >
-              {unclaiming ? "..." : "Undo claim"}
+              {unclaiming ? t("common.loadingShort") : t("profileCard.undoClaim")}
             </button>
           ) : (
             <button
@@ -107,7 +112,7 @@ export function ProfileItemCard({
               disabled={resolving}
               className="flex-1 py-2 rounded-xl bg-yellow text-black text-sm font-semibold font-display hover:bg-yellow/80 hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
             >
-              {resolving ? "..." : "Mark resolved \u2713"}
+              {resolving ? t("common.loadingShort") : t("profileCard.markResolved")}
             </button>
           )}
         </div>

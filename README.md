@@ -122,6 +122,27 @@ deliberately out of scope for this cycle. Until it lands, the guard rails are
 the reversibility above and a limit of 5 claims per hour per user, enforced
 inside `claim_item()`.
 
+**Free-text locations are unmoderated.** The report form's "Other" spot option
+writes whatever the student types straight into `items.location`, and that
+string is rendered verbatim on the board, in the claim modal and on `/profile`.
+Four of the live rows already hold free text this way.
+
+This is a moderation gap, not an injection one, and the distinction matters:
+
+- There is no HTML sink anywhere in `src/` — the only `dangerouslySetInnerHTML`
+  is two hardcoded JSON-LD blobs in `layout.tsx`. Every render of `location` is
+  a JSX text child, so React escapes it. Audited, not assumed.
+- The database caps it at `CHECK (char_length(location) <= 100)`. The form's
+  `maxLength={80}` and its validation are client-only and bypassable, because
+  the browser inserts into `items` directly with no server route in between.
+  The real ceiling is 100 characters.
+- There is **no character validation at all**, client or database. Within those
+  100 characters, RTL overrides, zero-width joiners, newlines, homoglyphs and
+  slurs all store and render fine.
+
+Deciding what to do about it — an allowlist, a report button, admin review, or
+dropping the free-text option — is a product call that has not been made.
+
 ---
 
 ## Branch Structure

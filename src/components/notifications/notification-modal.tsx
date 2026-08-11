@@ -6,6 +6,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { useFocusTrap } from "@/hooks/use-focus-trap";
 import { timeAgo } from "@/lib/utils/format";
 import { composeNotificationMessage } from "@/lib/notifications";
+import { t } from "@/lib/strings";
 import Image from "next/image";
 
 interface NotificationModalProps {
@@ -53,29 +54,29 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Notifications" className="relative w-full max-w-md bg-[var(--background)] border border-[var(--border)] rounded-2xl overflow-hidden animate-fade-up max-h-[85vh] flex flex-col">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={t("notifications.title")} className="relative w-full max-w-md bg-[var(--background)] border border-[var(--border)] rounded-2xl overflow-hidden animate-fade-up max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="p-6 pb-4 border-b border-[var(--border)]">
           <button
             onClick={onClose}
-            aria-label="Close notifications"
+            aria-label={t("notifications.close")}
             className="absolute top-4 right-4 p-1 text-[var(--muted)] hover:text-[var(--foreground)] cursor-pointer"
           >
             <X size={20} />
           </button>
 
           <div className="flex justify-center mb-4">
-            <Image src="/findit.svg" alt="FINDit" width={80} height={24} className="h-6 w-auto" />
+            <Image src="/findit.svg" alt={t("nav.logoAlt")} width={80} height={24} className="h-6 w-auto" />
           </div>
 
           <h2 className="font-display text-xl font-bold text-center">
-            Notifications
+            {t("notifications.title")}
           </h2>
 
           <div className="flex items-center justify-between mt-2">
             <span className="text-sm text-[var(--muted)]">
               {notifications.length === 0
-                ? "No notifications"
+                ? t("notifications.none")
                 : unreadCount === 0
                 ? `${notifications.length} notification${notifications.length > 1 ? "s" : ""}`
                 : `${unreadCount} unread`}
@@ -85,7 +86,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
                 onClick={handleMarkAllRead}
                 className="text-sm text-yellow hover:underline cursor-pointer"
               >
-                Mark all read
+                {t("notifications.markAllRead")}
               </button>
             )}
           </div>
@@ -106,9 +107,9 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
             <div className="py-12 text-center">
               <div className="text-4xl mb-4">🔔</div>
               <p className="text-[var(--muted)]">
-                No notifications yet.
+                {t("notifications.emptyTitle")}
                 <br />
-                They&apos;ll show up here when someone claims your item.
+                {t("notifications.emptyBody")}
               </p>
             </div>
           ) : (
@@ -123,7 +124,7 @@ export function NotificationModal({ open, onClose }: NotificationModalProps) {
                   }`}
                 >
                   <p className="text-sm">
-                    {composeNotificationMessage(notif) || "Someone interacted with your post."}
+                    {composeNotificationMessage(notif) || t("notifications.fallback")}
                   </p>
                   {notif.claimer_name && (
                     <p className="text-sm text-[var(--muted)] mt-1">

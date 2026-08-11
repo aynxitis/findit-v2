@@ -1,20 +1,21 @@
 import Link from "next/link";
+import { t } from "@/lib/strings";
 
 export function Footer() {
   return (
     <footer className="footer">
       <p>
-        Made with ♥ by a student, for students · FINDit Campus Lost &amp; Found
+        {t("footer.made")}
         ·{" "}
         <Link href="/privacy" className="footer-link">
-          Privacy Policy
+          {t("footer.privacy")}
         </Link>{" "}
         ·{" "}
         <Link href="/terms" className="footer-link">
-          Terms of Service
+          {t("footer.terms")}
         </Link>
       </p>
-      <p className="mt-1">© {new Date().getFullYear()} Anis Belamri · All rights reserved</p>
+      <p className="mt-1">© {new Date().getFullYear()} {t("footer.rights")}</p>
     </footer>
   );
 }

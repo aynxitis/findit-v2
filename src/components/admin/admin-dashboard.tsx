@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
 import { CATEGORY_LABELS, CATEGORY_ICONS, LOCATION_LABELS } from "@/lib/taxonomy";
 import { formatTimestamp } from "@/lib/utils/format";
+import { t } from "@/lib/strings";
 import type { Item, User as UserType } from "@/lib/types/item";
 import { RefreshCw } from "lucide-react";
 
@@ -29,12 +30,12 @@ export function AdminDashboard() {
     setLoadError(null);
     try {
       const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
+      if (!token) throw new Error(t("admin.error.notAuthenticated"));
 
       const res = await fetch("/api/admin/overview", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Request failed");
+      if (!res.ok) throw new Error(t("admin.error.requestFailed"));
 
       const payload = (await res.json()) as { items?: Item[]; users?: UserType[] };
       const itemsData = payload.items || [];
@@ -50,7 +51,7 @@ export function AdminDashboard() {
         totalUsers: usersData.length,
       });
     } catch {
-      setLoadError("Failed to load dashboard data. Please try refreshing.");
+      setLoadError(t("admin.loadError"));
     } finally {
       setLoading(false);
     }
@@ -63,7 +64,7 @@ export function AdminDashboard() {
   if (verifying) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <p className="text-[var(--muted)]">Loading…</p>
+        <p className="text-[var(--muted)]">{t("admin.loading")}</p>
       </div>
     );
   }
@@ -71,9 +72,9 @@ export function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold text-red mb-4">Access Denied</h1>
+        <h1 className="font-display text-3xl font-bold text-red mb-4">{t("admin.denied.title")}</h1>
         <p className="text-[var(--muted)]">
-          You don&apos;t have permission to access this page.
+          {t("admin.denied.body")}
         </p>
       </div>
     );
@@ -82,14 +83,14 @@ export function AdminDashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-3xl font-extrabold">Dashboard</h1>
+        <h1 className="font-display text-3xl font-extrabold">{t("admin.dashboard.title")}</h1>
         <button
           onClick={loadData}
           disabled={loading}
           className="font-display flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] hover:bg-[var(--border)] hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all text-sm font-semibold"
         >
           <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-          Refresh
+          {t("admin.refresh")}
         </button>
       </div>
 
@@ -103,23 +104,23 @@ export function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
             <div className="font-display text-2xl font-bold">{stats.totalItems}</div>
-            <div className="text-sm text-[var(--muted)]">Total Items</div>
+            <div className="text-sm text-[var(--muted)]">{t("admin.stat.totalItems")}</div>
           </div>
           <div className="p-4 rounded-xl bg-teal/10 border border-teal/20">
             <div className="font-display text-2xl font-bold text-teal">{stats.foundItems}</div>
-            <div className="text-sm text-[var(--muted)]">Found</div>
+            <div className="text-sm text-[var(--muted)]">{t("admin.stat.found")}</div>
           </div>
           <div className="p-4 rounded-xl bg-red/10 border border-red/20">
             <div className="font-display text-2xl font-bold text-red">{stats.lostItems}</div>
-            <div className="text-sm text-[var(--muted)]">Lost</div>
+            <div className="text-sm text-[var(--muted)]">{t("admin.stat.lost")}</div>
           </div>
           <div className="p-4 rounded-xl bg-yellow/10 border border-yellow/20">
             <div className="font-display text-2xl font-bold text-yellow">{stats.claimedItems}</div>
-            <div className="text-sm text-[var(--muted)]">Resolved</div>
+            <div className="text-sm text-[var(--muted)]">{t("admin.stat.resolved")}</div>
           </div>
           <div className="p-4 rounded-xl bg-blue/10 border border-blue/20">
             <div className="font-display text-2xl font-bold text-blue">{stats.totalUsers}</div>
-            <div className="text-sm text-[var(--muted)]">Users</div>
+            <div className="text-sm text-[var(--muted)]">{t("admin.stat.users")}</div>
           </div>
         </div>
       )}
@@ -133,7 +134,7 @@ export function AdminDashboard() {
               : "bg-[var(--surface)] border border-[var(--border)] hover:-translate-y-0.5"
           }`}
         >
-          Items ({items.length})
+          {t("admin.tab.items")} ({items.length})
         </button>
         <button
           onClick={() => setActiveTab("users")}
@@ -143,7 +144,7 @@ export function AdminDashboard() {
               : "bg-[var(--surface)] border border-[var(--border)] hover:-translate-y-0.5"
           }`}
         >
-          Users ({users.length})
+          {t("admin.tab.users")} ({users.length})
         </button>
       </div>
 
@@ -152,12 +153,12 @@ export function AdminDashboard() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[var(--border)]">
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Type</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Category</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Location</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Status</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">User</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Date</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.type")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.category")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.location")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.status")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.user")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.date")}</th>
               </tr>
             </thead>
             <tbody>
@@ -195,10 +196,10 @@ export function AdminDashboard() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[var(--border)]">
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Name</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Email</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Status</th>
-                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">Joined</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.name")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.email")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.status")}</th>
+                <th className="font-display text-left py-3 px-2 text-xs font-bold uppercase tracking-wide">{t("admin.col.joined")}</th>
               </tr>
             </thead>
             <tbody>
@@ -208,9 +209,9 @@ export function AdminDashboard() {
                   <td className="py-3 px-2 text-sm text-[var(--muted)]">{u.email}</td>
                   <td className="py-3 px-2">
                     {u.banned ? (
-                      <span className="px-2 py-1 rounded-full text-xs bg-red/20 text-red">Banned</span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-red/20 text-red">{t("admin.user.banned")}</span>
                     ) : (
-                      <span className="px-2 py-1 rounded-full text-xs bg-teal/20 text-teal">Active</span>
+                      <span className="px-2 py-1 rounded-full text-xs bg-teal/20 text-teal">{t("admin.user.active")}</span>
                     )}
                   </td>
                   <td className="py-3 px-2 text-sm text-[var(--muted)]">

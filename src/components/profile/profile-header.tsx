@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { toTitleCase } from "@/lib/utils";
+import { t } from "@/lib/strings";
 
 interface ProfileHeaderProps {
   stats: {
@@ -56,7 +57,7 @@ export function ProfileHeader({ stats }: ProfileHeaderProps) {
         {/* Info */}
         <div className="flex-1">
           <p className="font-display text-[0.68rem] font-bold tracking-[0.18em] uppercase text-teal mb-1">
-            ESTIN · Student
+            {t("profile.header.role")}
           </p>
           <h1 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-extrabold tracking-tight leading-tight mb-1">
             {firstName} <span className="text-yellow">{lastName}</span>
@@ -72,7 +73,7 @@ export function ProfileHeader({ stats }: ProfileHeaderProps) {
             {stats.found}
           </div>
           <div className="font-display text-[0.72rem] font-bold tracking-[0.08em] uppercase text-white/30">
-            Found posts
+            {t("profile.stats.found")}
           </div>
         </div>
         <div className="flex-1 min-w-[120px] bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 flex flex-col gap-1">
@@ -80,7 +81,7 @@ export function ProfileHeader({ stats }: ProfileHeaderProps) {
             {stats.lost}
           </div>
           <div className="font-display text-[0.72rem] font-bold tracking-[0.08em] uppercase text-white/30">
-            Lost reports
+            {t("profile.stats.lost")}
           </div>
         </div>
         <div className="flex-1 min-w-[120px] bg-white/[0.03] border border-white/[0.07] rounded-xl p-5 flex flex-col gap-1">
@@ -88,7 +89,7 @@ export function ProfileHeader({ stats }: ProfileHeaderProps) {
             {stats.claimed}
           </div>
           <div className="font-display text-[0.72rem] font-bold tracking-[0.08em] uppercase text-white/30">
-            Items resolved
+            {t("profile.stats.resolved")}
           </div>
         </div>
       </div>

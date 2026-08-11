@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ReportForm } from "@/components/report";
+import { t } from "@/lib/strings";
 
 export default function ReportFoundPage() {
   return (
@@ -12,13 +13,13 @@ export default function ReportFoundPage() {
           href="/browse"
           className="text-sm text-[var(--muted)] hover:text-yellow mb-4 inline-flex items-center gap-1 transition-colors font-display"
         >
-          {"\u2190"} Back to browse
+          {"\u2190"} {t("report.back")}
         </Link>
         <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-4">
-          Report a <span className="text-teal">Found</span> Item
+          {t("report.found.titleA")} <span className="text-teal">{t("report.found.titleHighlight")}</span> {t("report.found.titleB")}
         </h1>
         <p className="text-[var(--muted)] mt-3">
-          Found something on campus? Post it here so the owner can find it.
+          {t("report.found.subtitle")}
         </p>
       </div>
 

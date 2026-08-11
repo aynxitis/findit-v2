@@ -3,6 +3,7 @@
 import { ItemCard } from "./item-card";
 import type { Item } from "@/lib/types/item";
 import Link from "next/link";
+import { t } from "@/lib/strings";
 
 interface ItemGridProps {
   items: Item[];
@@ -26,7 +27,7 @@ export function ItemGrid({
   if (loading) {
     return (
       <div className="items-grid">
-        <div className="loading-state">Loading items...</div>
+        <div className="loading-state">{t("itemGrid.loading")}</div>
       </div>
     );
   }
@@ -34,7 +35,7 @@ export function ItemGrid({
   if (error) {
     return (
       <div className="items-grid">
-        <div className="loading-state">{error}. Please refresh.</div>
+        <div className="loading-state">{error}{t("itemGrid.errorSuffix")}</div>
       </div>
     );
   }
@@ -48,24 +49,26 @@ export function ItemGrid({
           </div>
           <h3>
             {searchQuery
-              ? "No results found"
+              ? t("itemGrid.empty.search.title")
               : emptyType === "found"
-              ? "No found items yet"
-              : "No lost reports yet"}
+              ? t("itemGrid.empty.found.title")
+              : t("itemGrid.empty.lost.title")}
           </h3>
           <p>
             {searchQuery
               ? `Nothing matched "${searchQuery}". Try a different keyword or clear your search.`
               : emptyType === "found"
-              ? "Nothing has been posted yet. If you found something, be the first to post it."
-              : "Nobody has reported a lost item matching your filters."}
+              ? t("itemGrid.empty.found.body")
+              : t("itemGrid.empty.lost.body")}
           </p>
           {!searchQuery && (
             <Link
               href={emptyType === "found" ? "/report/found" : "/report/lost"}
               className="btn-primary mt-4"
             >
-              {emptyType === "found" ? "Post a found item" : "Report a lost item"}
+              {emptyType === "found"
+                ? t("itemGrid.empty.found.cta")
+                : t("itemGrid.empty.lost.cta")}
             </Link>
           )}
         </div>

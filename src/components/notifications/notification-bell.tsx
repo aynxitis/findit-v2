@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Bell } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationModal } from "./notification-modal";
+import { t } from "@/lib/strings";
 
 export function NotificationBell() {
   const { unreadCount } = useNotifications();
@@ -14,7 +15,7 @@ export function NotificationBell() {
       <button
         onClick={() => setShowModal(true)}
         className="relative p-2 rounded-full bg-[var(--surface)] border border-[var(--border)] hover:border-yellow hover:bg-yellow/10 hover:text-yellow hover:-translate-y-0.5 transition-all cursor-pointer group"
-        aria-label="Notifications"
+        aria-label={t("nav.notifications")}
       >
         <Bell size={16} className="transition-all group-hover:text-yellow group-hover:animate-bell-swing" />
         {unreadCount > 0 && (

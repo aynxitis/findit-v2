@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useItems } from "@/hooks/use-items";
 import { ItemGrid, ItemFilters, ClaimModal } from "@/components/items";
 import type { Item, ItemType } from "@/lib/types/item";
+import { t } from "@/lib/strings";
 
 export default function BrowsePage() {
   const { user } = useAuth();
@@ -73,10 +74,10 @@ export default function BrowsePage() {
       <div className="browse-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="browse-header-left">
           <p className="page-tag text-xs tracking-[0.15em] uppercase text-teal font-bold font-display mb-1">
-            Campus lost & found
+            {t("browse.eyebrow")}
           </p>
           <h1 className="page-title font-display text-3xl font-extrabold tracking-tight">
-            Browse items
+            {t("browse.title")}
           </h1>
           <p className="page-sub text-sm text-muted mt-1">
             Showing {activeType} items — newest first
@@ -84,14 +85,14 @@ export default function BrowsePage() {
         </div>
 
         {/* Type Toggle */}
-        <div className="type-toggle flex w-fit rounded-full p-1 bg-surface border border-border" role="tablist" aria-label="Item type filter">
+        <div className="type-toggle flex w-fit rounded-full p-1 bg-surface border border-border" role="tablist" aria-label={t("browse.typeFilterLabel")}>
           <button
             className={`toggle-btn ${activeType === "found" ? "active-found" : ""}`}
             onClick={() => handleTypeChange("found")}
             role="tab"
             aria-selected={activeType === "found"}
           >
-            {"\u2726"} Found
+            {"\u2726"} {t("browse.toggle.found")}
           </button>
           <button
             className={`toggle-btn ${activeType === "lost" ? "active-lost" : ""}`}
@@ -99,7 +100,7 @@ export default function BrowsePage() {
             role="tab"
             aria-selected={activeType === "lost"}
           >
-            Lost
+            {t("browse.toggle.lost")}
           </button>
         </div>
       </div>
@@ -110,10 +111,10 @@ export default function BrowsePage() {
         <input
           type="search"
           className="search-input w-full pl-11 pr-10 py-3 rounded-xl bg-surface border border-border text-sm placeholder:text-muted focus:outline-none focus:border-yellow transition-colors"
-          placeholder="Search by category, location, description..."
+          placeholder={t("browse.search.placeholder")}
           value={searchInput}
           onChange={(e) => handleSearchChange(e.target.value)}
-          aria-label="Search items"
+          aria-label={t("browse.search.label")}
         />
         {searchInput && (
           <button
@@ -122,7 +123,7 @@ export default function BrowsePage() {
               setSearchInput("");
               setSearchQuery("");
             }}
-            aria-label="Clear search"
+            aria-label={t("browse.search.clear")}
           >
             <X className="w-4 h-4" />
           </button>
@@ -143,13 +144,13 @@ export default function BrowsePage() {
       {activeType === "found" && (
         <div className="report-banner flex items-center justify-between gap-4 p-4 my-6 rounded-xl bg-red/10 border border-red/30">
           <p className="text-sm">
-            <strong>Don&apos;t see your item?</strong>{" "}Post a lost report and we&apos;ll notify you if something matching shows up.
+            <strong>{t("browse.banner.strong")}</strong>{" "}{t("browse.banner.body")}
           </p>
           <Link
             href="/report/lost"
             className="btn-primary text-xs px-4 py-2 whitespace-nowrap"
           >
-            Report it lost {"\u2192"}
+            {t("browse.banner.cta")} {"\u2192"}
           </Link>
         </div>
       )}

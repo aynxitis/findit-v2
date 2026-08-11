@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { X } from "lucide-react";
+import { t } from "@/lib/strings";
 import {
   CATEGORIES,
   ZONES,
@@ -121,12 +122,12 @@ export function AdminItemModal({
     e.preventDefault();
     setValidationError(null);
 
-    if (!form.user_id.trim()) { setValidationError("User ID is required"); return; }
-    if (!form.category) { setValidationError("Category is required"); return; }
-    if (!form.location) { setValidationError("Location is required"); return; }
-    if (!form.date) { setValidationError("Date is required"); return; }
+    if (!form.user_id.trim()) { setValidationError(t("adminModal.validation.userId")); return; }
+    if (!form.category) { setValidationError(t("adminModal.validation.category")); return; }
+    if (!form.location) { setValidationError(t("adminModal.validation.location")); return; }
+    if (!form.date) { setValidationError(t("adminModal.validation.date")); return; }
     if (form.type === "found" && !form.where_left) {
-      setValidationError("Where left is required for found items");
+      setValidationError(t("adminModal.validation.whereLeft"));
       return;
     }
 
@@ -163,24 +164,24 @@ export function AdminItemModal({
         </button>
 
         <h2 className="font-display text-xl font-bold mb-5">
-          {item ? "Edit Item" : "Add Item"}
+          {item ? t("adminModal.editTitle") : t("adminModal.addTitle")}
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Row 1: Type + Status */}
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Type</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.type")}</span>
               <select value={form.type} onChange={(e) => handleTypeChange(e.target.value as "found" | "lost")} className={selectCls}>
-                <option value="found">Found</option>
-                <option value="lost">Lost</option>
+                <option value="found">{t("adminModal.opt.found")}</option>
+                <option value="lost">{t("adminModal.opt.lost")}</option>
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Status</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.status")}</span>
               <select value={form.status} onChange={(e) => set("status", e.target.value as "open" | "claimed")} className={selectCls}>
-                <option value="open">Open</option>
-                <option value="claimed">Claimed</option>
+                <option value="open">{t("adminModal.opt.open")}</option>
+                <option value="claimed">{t("adminModal.opt.claimed")}</option>
               </select>
             </label>
           </div>
@@ -188,16 +189,16 @@ export function AdminItemModal({
           {/* Row 2: Category + Date */}
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Category *</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.category")}</span>
               <select value={form.category} onChange={(e) => set("category", e.target.value as ItemCategory | "")} className={selectCls}>
-                <option value="">Select…</option>
+                <option value="">{t("adminModal.opt.select")}</option>
                 {CATEGORIES.map((c) => (
                   <option key={c.slug} value={c.slug}>{c.icon} {c.label}</option>
                 ))}
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Date *</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.date")}</span>
               <input
                 type="date"
                 value={form.date}
@@ -211,18 +212,18 @@ export function AdminItemModal({
           {/* Row 3: Zone + Location */}
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Zone</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.zone")}</span>
               <select value={form.zone} onChange={(e) => handleZoneChange(e.target.value as ItemZone | "")} className={selectCls}>
-                <option value="">Any / Not sure</option>
+                <option value="">{t("adminModal.opt.anyZone")}</option>
                 {ZONES.map((z) => (
                   <option key={z.slug} value={z.slug}>{z.icon} {z.label}</option>
                 ))}
               </select>
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Location *</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.location")}</span>
               <select value={form.location} onChange={(e) => set("location", e.target.value as KnownLocation | "")} className={selectCls}>
-                <option value="">Select…</option>
+                <option value="">{t("adminModal.opt.select")}</option>
                 {availableLocations.map((loc) => (
                   <option key={loc} value={loc}>{locationLabel(loc)}</option>
                 ))}
@@ -233,9 +234,9 @@ export function AdminItemModal({
           {/* Row 4: Where Left (found only) */}
           {form.type === "found" && (
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Where Left *</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.whereLeft")}</span>
               <select value={form.where_left} onChange={(e) => set("where_left", e.target.value as ItemWhereLeft | "")} className={selectCls}>
-                <option value="">Select…</option>
+                <option value="">{t("adminModal.opt.select")}</option>
                 {WHERE_LEFT.map((w) => (
                   <option key={w.slug} value={w.slug}>{w.icon} {w.optionLabel}</option>
                 ))}
@@ -252,19 +253,19 @@ export function AdminItemModal({
               value={form.description}
               onChange={(e) => set("description", e.target.value.slice(0, 400))}
               rows={3}
-              placeholder="Optional description…"
+              placeholder={t("adminModal.placeholder.description")}
               className={`${inputCls} resize-none`}
             />
           </label>
 
           {/* Row 6: Photo URL */}
           <label className="flex flex-col gap-1">
-            <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">Photo URL</span>
+            <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.photoUrl")}</span>
             <input
               type="url"
               value={form.photo_url}
               onChange={(e) => set("photo_url", e.target.value)}
-              placeholder="https://…"
+              placeholder={t("adminModal.placeholder.photoUrl")}
               className={inputCls}
             />
           </label>
@@ -272,22 +273,22 @@ export function AdminItemModal({
           {/* Row 7: User ID + User Email */}
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">User ID *</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.userId")}</span>
               <input
                 type="text"
                 value={form.user_id}
                 onChange={(e) => set("user_id", e.target.value)}
-                placeholder="Supabase User UUID"
+                placeholder={t("adminModal.placeholder.userId")}
                 className={`${inputCls} font-mono`}
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">User Email</span>
+              <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.userEmail")}</span>
               <input
                 type="email"
                 value={form.user_email}
                 onChange={(e) => set("user_email", e.target.value)}
-                placeholder="user@estin.dz"
+                placeholder={t("adminModal.placeholder.userEmail")}
                 className={inputCls}
               />
             </label>
@@ -295,12 +296,12 @@ export function AdminItemModal({
 
           {/* Row 8: User Name */}
           <label className="flex flex-col gap-1">
-            <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">User Name</span>
+            <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.userName")}</span>
             <input
               type="text"
               value={form.user_name}
               onChange={(e) => set("user_name", e.target.value)}
-              placeholder="Display name"
+              placeholder={t("adminModal.placeholder.userName")}
               className={inputCls}
             />
           </label>
@@ -320,7 +321,7 @@ export function AdminItemModal({
               disabled={saving}
               className="font-display flex-1 py-3 rounded-xl border border-[var(--border)] font-semibold hover:bg-[var(--surface)] hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed transition-all"
             >
-              Cancel
+              {t("adminModal.cancel")}
             </button>
             <button
               type="submit"
@@ -331,7 +332,7 @@ export function AdminItemModal({
                   : "bg-teal text-[var(--background)]"
               }`}
             >
-              {saving ? "Saving…" : item ? "Save Changes" : "Add Item"}
+              {saving ? t("adminModal.saving") : item ? t("adminModal.save") : t("adminModal.addTitle")}
             </button>
           </div>
         </form>

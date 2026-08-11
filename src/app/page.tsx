@@ -4,6 +4,7 @@ import { Nav, Footer, BackgroundBlobs } from "@/components/layout";
 import { AuthNotice } from "@/components/home/auth-notice";
 import { StatsSection } from "@/components/home/stats-section";
 import { ScrollingStrip } from "@/components/home/scrolling-strip";
+import { t } from "@/lib/strings";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
 
 export default function Home() {
@@ -23,47 +24,45 @@ export default function Home() {
           {/* Live badge */}
           <div className="badge animate-fade-up">
             <span className="badge-dot" />
-            Live on campus · Free to use
+            {t("home.badge")}
           </div>
 
           {/* Headline */}
           <h1 className="font-display text-[clamp(2.4rem,8vw,6rem)] font-extrabold leading-[1.05] tracking-[-2px] max-w-[800px] animate-fade-up [animation-delay:100ms]">
-            Stop the
+            {t("home.hero.line1")}
             <br />
-            email <span className="text-red">spam.</span>
+            {t("home.hero.line2a")} <span className="text-red">{t("home.hero.line2b")}</span>
             <br />
-            Find your <span className="text-yellow">stuff.</span>
+            {t("home.hero.line3a")} <span className="text-yellow">{t("home.hero.line3b")}</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-[clamp(0.95rem,2.5vw,1.2rem)] text-muted max-w-[520px] leading-relaxed animate-fade-up [animation-delay:200ms]">
-            A smarter lost &amp; found for our campus. Browse what&apos;s been
-            found, post what you lost, or report what you found — no campus-wide
-            emails.
+            {t("home.hero.subtitle")}
           </p>
         </section>
 
         {/* How it works */}
         <section className="relative z-5 max-w-[700px] mx-auto mt-16 px-6 animate-fade-up [animation-delay:250ms]">
           <p className="text-xs tracking-[0.15em] uppercase text-teal font-bold font-display mb-2">
-            How it works
+            {t("home.how.eyebrow")}
           </p>
           <h2 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] font-extrabold tracking-tight mb-8">
-            Simple. No inbox chaos.
+            {t("home.how.title")}
           </h2>
 
           <div className="flex flex-col gap-7">
             <Step num="01">
-              <h3>Sign in with your <span className="text-teal font-semibold">@estin.dz</span> email</h3>
-              <p>Just to verify you&apos;re a student at ESTIN — no password, no account creation needed.</p>
+              <h3>{t("home.step1.titleA")} <span className="text-teal font-semibold">{t("home.step1.titleDomain")}</span> {t("home.step1.titleB")}</h3>
+              <p>{t("home.step1.body")}</p>
             </Step>
             <Step num="02">
-              <h3>Lost something or found something?</h3>
-              <p>Browse found items first — your stuff might already be there. Or post what you found so the owner can spot it.</p>
+              <h3>{t("home.step2.title")}</h3>
+              <p>{t("home.step2.body")}</p>
             </Step>
             <Step num="03">
-              <h3>No more email spam. Find your stuff.</h3>
-              <p>&quot;Lost student card&quot;, &quot;Found keys in the restau&quot; Familiar? Post it here — only the people who need to see it will.</p>
+              <h3>{t("home.step3.title")}</h3>
+              <p>{t("home.step3.body")}</p>
             </Step>
           </div>
         </section>
@@ -74,18 +73,18 @@ export default function Home() {
         {/* Action Cards */}
         <div className="relative z-5 flex flex-col sm:flex-row gap-4 justify-center px-6 pt-12 animate-fade-up [animation-delay:350ms]">
           <Link href="/browse" className="action-card action-card-lost group">
-            <h2 className="font-display text-xl font-extrabold mb-2">I Lost Something</h2>
+            <h2 className="font-display text-xl font-extrabold mb-2">{t("home.card.lost.title")}</h2>
             <p className="text-sm opacity-75 leading-relaxed">
-              Browse found items first — your stuff might already be there. Post a report if it&apos;s not.
+              {t("home.card.lost.body")}
             </p>
             <span className="action-card-arrow">
               <ArrowUpRight className="w-5 h-5" />
             </span>
           </Link>
           <Link href="/report/found" className="action-card action-card-found group">
-            <h2 className="font-display text-xl font-extrabold mb-2">I Found Something</h2>
+            <h2 className="font-display text-xl font-extrabold mb-2">{t("home.card.found.title")}</h2>
             <p className="text-sm opacity-75 leading-relaxed">
-              Post what you found so the owner can spot it and reach out to claim it.
+              {t("home.card.found.body")}
             </p>
             <span className="action-card-arrow">
               <ArrowUpRight className="w-5 h-5" />
@@ -95,9 +94,9 @@ export default function Home() {
 
         {/* Browse strip */}
         <div className="relative z-5 flex items-center justify-center gap-4 flex-wrap px-6 pt-8 animate-fade-up [animation-delay:450ms]">
-          <p className="text-muted text-[0.95rem]">Just looking?</p>
+          <p className="text-muted text-[0.95rem]">{t("home.browse.prompt")}</p>
           <Link href="/browse" className="btn-browse">
-            Browse all items →
+            {t("home.browse.cta")}
           </Link>
         </div>
 
@@ -112,18 +111,18 @@ export default function Home() {
           <div className="madeby-card">
             <div className="madeby-left">
               <p className="text-xs tracking-[0.15em] uppercase text-teal font-bold font-display mb-2">
-                Built by
+                {t("home.builtBy.eyebrow")}
               </p>
               <h2 className="font-display text-[clamp(1.4rem,3vw,2rem)] font-extrabold tracking-tight leading-tight mb-1">
-                Mohamed Anis <span className="text-yellow">BELAMRI</span>
+                {t("home.builtBy.nameA")} <span className="text-yellow">{t("home.builtBy.nameB")}</span>
               </h2>
-              <p className="text-sm text-muted">1st Year CS Student · ESTIN Bejaia</p>
+              <p className="text-sm text-muted">{t("home.builtBy.role")}</p>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <SocialLink href="https://github.com/aynxitis" icon={<GithubIcon />} label="GitHub" />
-              <SocialLink href="https://www.linkedin.com/in/anis-belamri/" icon={<LinkedinIcon />} label="LinkedIn" />
-              <SocialLink href="mailto:am_belamri@estin.dz" icon={<Mail className="w-3.5 h-3.5" />} label="Email" />
-              <SocialLink href="https://aynx.vercel.app" icon={<Globe className="w-3.5 h-3.5" />} label="Website" />
+              <SocialLink href="https://github.com/aynxitis" icon={<GithubIcon />} label={t("home.social.github")} />
+              <SocialLink href="https://www.linkedin.com/in/anis-belamri/" icon={<LinkedinIcon />} label={t("home.social.linkedin")} />
+              <SocialLink href="mailto:am_belamri@estin.dz" icon={<Mail className="w-3.5 h-3.5" />} label={t("home.social.email")} />
+              <SocialLink href="https://aynx.vercel.app" icon={<Globe className="w-3.5 h-3.5" />} label={t("home.social.website")} />
             </div>
           </div>
         </section>

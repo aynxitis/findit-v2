@@ -7,6 +7,7 @@ import { SignInModal } from "@/components/auth";
 import { AccountModal } from "@/components/profile";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { useAuth } from "@/hooks/use-auth";
+import { t } from "@/lib/strings";
 
 interface NavProps {
   minimal?: boolean;
@@ -23,7 +24,7 @@ export function Nav({ minimal = false }: NavProps) {
         <Link href="/" className="flex items-center flex-shrink-0">
           <Image
             src="/findit.svg"
-            alt="FINDit"
+            alt={t("nav.logoAlt")}
             width={80}
             height={24}
             className="h-6 w-auto"
@@ -41,12 +42,12 @@ export function Nav({ minimal = false }: NavProps) {
                 <button
                   onClick={() => setShowAccountModal(true)}
                   className="nav-avatar"
-                  aria-label="Account"
+                  aria-label={t("nav.account")}
                 >
                   {user.user_metadata?.avatar_url ? (
                     <Image
                       src={user.user_metadata.avatar_url}
-                      alt={user.user_metadata?.full_name || "Profile"}
+                      alt={user.user_metadata?.full_name || t("nav.profile")}
                       width={32}
                       height={32}
                       className="w-8 h-8 object-cover"
@@ -69,9 +70,9 @@ export function Nav({ minimal = false }: NavProps) {
                   onClick={() => setShowSignInModal(true)}
                   className="btn-primary"
                 >
-                  Sign in
+                  {t("nav.signIn")}
                 </button>
-                <Link href="/profile" className="nav-avatar" aria-label="Profile">
+                <Link href="/profile" className="nav-avatar" aria-label={t("nav.profile")}>
                   <svg viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="12" className="avatar-bg" />
                     <circle cx="12" cy="9" r="3.5" className="avatar-icon" />

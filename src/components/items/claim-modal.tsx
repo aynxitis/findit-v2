@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils/format";
+import { t } from "@/lib/strings";
 
 /** The half of claim_item()'s payload that carries the poster's contact details. */
 interface PosterContact {
@@ -63,20 +64,20 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
       });
 
       if (rpcError) {
-        throw new Error("Failed to claim item. Please try again.");
+        throw new Error(t("claim.error.rpc"));
       }
 
       const result = data as { success: boolean; error?: string } & PosterContact;
 
       if (!result.success) {
         const errorMessages: Record<string, string> = {
-          ITEM_NOT_FOUND: "This item no longer exists.",
-          ALREADY_CLAIMED: "This item has already been claimed.",
-          LISTING_EXPIRED: "This listing has expired and can no longer be claimed.",
-          SELF_CLAIM: "You can't claim your own item.",
-          RATE_LIMITED: "You've claimed too many items in the last hour. Try again later.",
+          ITEM_NOT_FOUND: t("claim.error.notFound"),
+          ALREADY_CLAIMED: t("claim.error.alreadyClaimed"),
+          LISTING_EXPIRED: t("claim.error.expired"),
+          SELF_CLAIM: t("claim.error.selfClaim"),
+          RATE_LIMITED: t("claim.error.rateLimited"),
         };
-        throw new Error(errorMessages[result.error || ""] || "Failed to claim item.");
+        throw new Error(errorMessages[result.error || ""] || t("claim.error.generic"));
       }
 
       setContact({ poster_email: result.poster_email, poster_name: result.poster_name });
@@ -86,7 +87,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
       // No auto-close: the contact details are only revealed now, and the
       // modal is the only place they appear. Dismissal is the X button.
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to claim item");
+      setError(err instanceof Error ? err.message : t("claim.error.fallback"));
     } finally {
       setLoading(false);
     }
@@ -105,15 +106,15 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         <DialogHeader className="text-center">
           <DialogTitle className="font-display text-xl font-bold">
             {success
-              ? "Success!"
+              ? t("claim.title.success")
               : isFound
-              ? "Is this yours?"
-              : "Did you find this?"}
+              ? t("claim.title.found")
+              : t("claim.title.lost")}
           </DialogTitle>
           <DialogDescription className="text-muted text-sm">
             {success
-              ? "This item has been marked as resolved. Reach out to coordinate!"
-              : "Confirm below to mark this item as resolved."}
+              ? t("claim.description.success")
+              : t("claim.description.pending")}
           </DialogDescription>
         </DialogHeader>
 
@@ -137,7 +138,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         </div>
 
         <div className="claim-modal-summary mt-4 p-4 rounded-lg bg-surface border border-border">
-          <div className="text-xs uppercase tracking-wide text-muted mb-1">Item info</div>
+          <div className="text-xs uppercase tracking-wide text-muted mb-1">{t("claim.itemInfo")}</div>
           <div className="font-medium">
             {categoryIcon} {categoryLabel} · {locationLabel} · {dateStr}
           </div>
@@ -146,9 +147,9 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           )}
 
           <div className="mt-3">
-            <div className="text-xs uppercase tracking-wide text-muted mb-1">Poster info</div>
+            <div className="text-xs uppercase tracking-wide text-muted mb-1">{t("claim.posterInfo")}</div>
             <div className="font-medium">
-              {contact?.poster_name || item.user_name || "ESTIN Student"}
+              {contact?.poster_name || item.user_name || t("claim.posterFallback")}
             </div>
             {/* Contact details come from claim_item()'s return value and appear
                 only once the claim has actually succeeded. */}
@@ -181,12 +182,12 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           )}
         >
           {success
-            ? "Done! ✓"
+            ? t("claim.submit.done")
             : loading
-            ? "Saving..."
+            ? t("claim.submit.saving")
             : isFound
-            ? "Yes, this is mine →"
-            : "Yes, I found this →"}
+            ? t("claim.submit.found")
+            : t("claim.submit.lost")}
         </button>
       </DialogContent>
     </Dialog>

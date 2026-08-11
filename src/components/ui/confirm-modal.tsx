@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { t } from "@/lib/strings";
 
 interface ConfirmModalProps {
   open: boolean;
@@ -27,8 +28,8 @@ export function ConfirmModal({
   onConfirm,
   title,
   message,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText = t("confirm.confirm"),
+  cancelText = t("confirm.cancel"),
   variant = "default",
   loading = false,
 }: ConfirmModalProps) {
@@ -61,7 +62,7 @@ export function ConfirmModal({
                 : "bg-white text-[#0d0d0d] hover:shadow-lg"
             )}
           >
-            {loading ? "..." : confirmText}
+            {loading ? t("common.loadingShort") : confirmText}
           </button>
         </div>
       </DialogContent>

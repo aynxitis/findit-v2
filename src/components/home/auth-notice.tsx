@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { t } from "@/lib/strings";
 
 /**
  * Renders the rejection auth/callback redirects with. Nothing read this before,
@@ -12,8 +13,8 @@ import { useSearchParams } from "next/navigation";
  * homepage inside official-looking notice styling.
  */
 const ERROR_MESSAGES: Record<string, string> = {
-  domain: "Only @estin.dz accounts are allowed.",
-  auth_callback_error: "Sign-in failed. Please try again.",
+  domain: t("auth.notice.domain"),
+  auth_callback_error: t("auth.notice.generic"),
 };
 
 export function AuthNotice() {
@@ -22,7 +23,7 @@ export function AuthNotice() {
 
   if (!code) return null;
 
-  const message = ERROR_MESSAGES[code] ?? "Sign-in failed. Please try again.";
+  const message = ERROR_MESSAGES[code] ?? t("auth.notice.generic");
 
   return (
     <div

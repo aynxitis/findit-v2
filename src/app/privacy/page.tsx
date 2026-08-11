@@ -1,6 +1,7 @@
 import { Nav, Footer, BackgroundBlobs } from "@/components/layout";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { t } from "@/lib/strings";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | FINDit",
@@ -19,121 +20,101 @@ export default function PrivacyPolicy() {
             href="/"
             className="inline-flex items-center gap-1 text-sm font-display font-bold text-white/50 hover:text-yellow transition-colors mb-8"
           >
-            ← Back to FINDit
+            {t("legal.back")}
           </Link>
 
           <p className="text-sm uppercase tracking-widest text-teal font-semibold mb-2">
-            Legal
+            {t("legal.eyebrow")}
           </p>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold mb-1">
-            Privacy <span className="text-yellow">Policy</span>
+            {t("privacy.title.a")} <span className="text-yellow">{t("privacy.title.b")}</span>
           </h1>
-          <p className="text-sm text-white/50 mb-8">Last updated: February 2026</p>
+          <p className="text-sm text-white/50 mb-8">{t("legal.updated")}</p>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">Who we are</h2>
+            <h2 className="legal-heading">{t("privacy.whoWeAre.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70">
-              FINDit is a campus lost &amp; found platform built for students at{" "}
-              <strong className="text-white">ESTIN Bejaia</strong>. It was created by a student, for
-              students — not a company, not a business. There are no ads, no
-              trackers, no data selling.
+              {t("privacy.whoWeAre.a")}{" "}
+              <strong className="text-white">{t("privacy.whoWeAre.strong")}</strong>{t("privacy.whoWeAre.b")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">What we collect</h2>
+            <h2 className="legal-heading">{t("privacy.collect.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70 mb-3">
-              When you sign in with Google, we receive the following from your
-              Google account:
+              {t("privacy.collect.intro")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              <strong className="text-white">Full name</strong> — to display on your posts and profile.
+              <strong className="text-white">{t("privacy.collect.name.strong")}</strong>{t("privacy.collect.name.rest")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              <strong className="text-white">Email address</strong> — to verify you&apos;re an ESTIN
-              student (must end in @estin.dz) and to allow item owners to contact
-              you.
+              <strong className="text-white">{t("privacy.collect.email.strong")}</strong>{t("privacy.collect.email.rest")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              <strong className="text-white">Profile picture</strong> — displayed in the navigation bar
-              while you&apos;re signed in.
+              <strong className="text-white">{t("privacy.collect.photo.strong")}</strong>{t("privacy.collect.photo.rest")}
             </p>
             <p className="text-sm leading-relaxed text-white/70 mt-3">
-              We do not collect passwords. We do not access any other Google
-              account data.
+              {t("privacy.collect.outro")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">Why we collect it</h2>
+            <h2 className="legal-heading">{t("privacy.why.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70 mb-3">
-              Your email is used{" "}<strong className="text-white">only</strong>{" "}to verify that you&apos;re
-              a student at ESTIN. Without this check, anyone on the internet
-              could post to the platform.
+              {t("privacy.why.a")}{" "}<strong className="text-white">{t("privacy.why.strong")}</strong>{" "}{t("privacy.why.b")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              Your name and photo are used to make the experience feel personal
-              and to show item ownership. Your contact email may be shared with
-              another verified ESTIN student if their lost item matches something
-              you found — this is the core purpose of the app.
+              {t("privacy.why.p2")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">How we store it</h2>
+            <h2 className="legal-heading">{t("privacy.store.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70">
-              Your data is stored in{" "}<strong className="text-white">Supabase, a PostgreSQL database</strong>.
-              Access is restricted to verified @estin.dz
-              accounts only. No third parties have access to your data.
+              {t("privacy.store.a")}{" "}<strong className="text-white">{t("privacy.store.strong")}</strong>{t("privacy.store.b")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">Who can see your data</h2>
+            <h2 className="legal-heading">{t("privacy.visibility.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70">
-              Your{" "}<strong className="text-white">name</strong>{" "}is visible to other signed-in ESTIN
-              students when you post a lost or found item.
+              {t("privacy.visibility.your")}{" "}<strong className="text-white">{t("privacy.visibility.name.strong")}</strong>{" "}{t("privacy.visibility.name.b")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              Your{" "}<strong className="text-white">email</strong>{" "}is only shared when a match is made
-              between a lost and found item — to allow the two parties to
-              connect.
+              {t("privacy.visibility.your")}{" "}<strong className="text-white">{t("privacy.visibility.email.strong")}</strong>{" "}{t("privacy.visibility.email.b")}
             </p>
             <p className="text-sm leading-relaxed text-white/70">
-              Your{" "}<strong className="text-white">profile picture</strong>{" "}is only visible to you in the
-              nav bar.
+              {t("privacy.visibility.your")}{" "}<strong className="text-white">{t("privacy.visibility.photo.strong")}</strong>{" "}{t("privacy.visibility.photo.b")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">How to delete your data</h2>
+            <h2 className="legal-heading">{t("privacy.delete.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70">
-              To have your account and all associated data permanently deleted,
-              send an email to{" "}
+              {t("privacy.delete.a")}{" "}
               <a href="mailto:findit@estin.dz" className="legal-link">
-                findit@estin.dz
+                {t("legal.email")}
               </a>{" "}
-              with the subject line{" "}
-              <strong className="text-white">&quot;Delete my FINDit account&quot;</strong>. Your data will be
-              removed within 7 days.
+              {t("privacy.delete.b")}{" "}
+              <strong className="text-white">{t("privacy.delete.strong")}</strong>{t("privacy.delete.c")}
             </p>
           </section>
 
           <section className="legal-card mb-4">
-            <h2 className="legal-heading">Contact</h2>
+            <h2 className="legal-heading">{t("legal.contact.title")}</h2>
             <p className="text-sm leading-relaxed text-white/70">
-              Questions about this policy? Reach out at{" "}
+              {t("privacy.contact.a")}{" "}
               <a href="mailto:findit@estin.dz" className="legal-link">
-                findit@estin.dz
+                {t("legal.email")}
               </a>{" "}
-              or on{" "}
+              {t("legal.contact.or")}{" "}
               <a
                 href="https://github.com/aynxitis"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="legal-link"
               >
-                GitHub
+                {t("legal.github")}
               </a>
               .
             </p>

@@ -1,11 +1,12 @@
 "use client";
+import { t } from "@/lib/strings";
 
 const STRIP_ITEMS = [
-  { label: "Stop the email spam. Find your stuff.", icon: "✦" },
-  { label: "FINDit", icon: "✦" },
-  { label: "2026", icon: "✦" },
-  { label: "ESTIN", icon: "✦" },
-  { label: "Built by Anis BELAMRI", icon: "✦" },
+  { label: t("home.strip.tagline"), icon: "✦" },
+  { label: t("home.strip.brand"), icon: "✦" },
+  { label: t("home.strip.year"), icon: "✦" },
+  { label: t("home.strip.school"), icon: "✦" },
+  { label: t("home.strip.author"), icon: "✦" },
 ];
 
 export function ScrollingStrip() {

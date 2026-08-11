@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { GoogleButton } from "./google-button";
 import { useAuth } from "@/hooks/use-auth";
+import { t } from "@/lib/strings";
 
 interface SignInModalProps {
   open: boolean;
@@ -47,7 +48,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
           <div className="mb-2">
             <Image
               src="/findit.svg"
-              alt="FINDit"
+              alt={t("nav.logoAlt")}
               width={80}
               height={24}
               className="h-6 w-auto"
@@ -55,11 +56,11 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
             />
           </div>
           <DialogTitle className="font-display text-2xl font-bold">
-            Welcome
+            {t("signIn.title")}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Sign in with your{" "}<strong className="text-teal">@estin.dz</strong>{" "}
-            Google account to verify you&apos;re an ESTIN student.
+            {t("signIn.descriptionA")}{" "}<strong className="text-teal">{t("signIn.descriptionDomain")}</strong>{" "}
+            {t("signIn.descriptionB")}
           </DialogDescription>
         </DialogHeader>
 
@@ -77,7 +78,7 @@ export function SignInModal({ open, onOpenChange }: SignInModalProps) {
           )}
 
           <p className="text-xs text-center text-muted-foreground">
-            Only{" "}<strong>@estin.dz</strong>{" "}accounts will be accepted.
+            {t("authGate.noteBefore")}{" "}<strong>{t("authGate.noteDomain")}</strong>{" "}{t("authGate.noteAfter")}
           </p>
         </div>
       </DialogContent>
