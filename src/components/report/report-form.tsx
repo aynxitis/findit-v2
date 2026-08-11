@@ -271,6 +271,10 @@ export function ReportForm({ type }: ReportFormProps) {
         date: formData.date,
         description: formData.description.trim().slice(0, 400) || null,
         photo_url: null as string | null,
+        // The path is what the app reads back, via a signed URL. photo_url is
+        // still written so a rollback of this deploy still renders images —
+        // migration 010 keeps the column for exactly that.
+        photo_path: null as string | null,
         user_id: user.id,
       };
 
@@ -313,6 +317,10 @@ export function ReportForm({ type }: ReportFormProps) {
           .getPublicUrl(path);
 
         itemData.photo_url = urlData.publicUrl;
+        // Raw, undecoded — the same form migration 010 backfilled and the form
+        // the storage API expects. `path` is built here, so it is never
+        // percent-encoded to begin with.
+        itemData.photo_path = path;
         uploadedPhotoPath = path;
       }
 

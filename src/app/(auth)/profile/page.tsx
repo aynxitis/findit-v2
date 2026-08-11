@@ -95,17 +95,14 @@ export default function ProfilePage() {
     setDeleting(true);
     setActionError(null);
     try {
-      // Clean up photo from storage if present
-      if (deleteItem.photo_url) {
-        const marker = "/object/public/item-photos/";
-        const idx = deleteItem.photo_url.indexOf(marker);
-        if (idx !== -1) {
-          const storagePath = deleteItem.photo_url.substring(idx + marker.length);
-          await supabase.storage
-            .from("item-photos")
-            .remove([storagePath])
-            .catch(() => {}); // Don't block delete if storage cleanup fails
-        }
+      // Clean up photo from storage if present. Read the stored path rather
+      // than slicing it back out of photo_url: the URL percent-encodes names,
+      // and a private bucket would not carry the public marker at all.
+      if (deleteItem.photo_path) {
+        await supabase.storage
+          .from("item-photos")
+          .remove([deleteItem.photo_path])
+          .catch(() => {}); // Don't block delete if storage cleanup fails
       }
 
       const { error } = await supabase

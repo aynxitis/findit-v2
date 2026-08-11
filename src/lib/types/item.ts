@@ -25,6 +25,13 @@ export interface Item {
   where_left?: ItemWhereLeft;
   description?: string;
   photo_url?: string;
+  // Bucket-relative object path, percent-decoded — the raw name the storage API
+  // expects. Two live rows carry a literal space, so never re-derive this from
+  // photo_url: the encoded form signs to a 404. See migration 010.
+  photo_path?: string;
+  // Client-derived, NOT a column. useItems signs photo_path after fetching and
+  // merges the result here, so render sites stay plain src={...} consumers.
+  photo_signed_url?: string;
   date: string;
   status: ItemStatus;
   user_id: string;

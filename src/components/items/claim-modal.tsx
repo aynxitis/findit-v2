@@ -122,9 +122,9 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
           className="relative w-full mt-4 rounded-lg overflow-hidden bg-surface border border-border"
           style={{ aspectRatio: "4/3" }}
         >
-          {item.photo_url ? (
+          {item.photo_signed_url ? (
             <Image
-              src={item.photo_url}
+              src={item.photo_signed_url}
               alt={categoryLabel}
               fill
               className="object-contain"

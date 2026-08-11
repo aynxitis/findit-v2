@@ -12,7 +12,48 @@ const FETCH_LIMIT = 100;
 // user_email is deliberately absent: it is unreadable by `authenticated` and
 // reaches a claimer only through claim_item()'s return value.
 const ITEM_COLUMNS =
-  "id, ref, type, category, location, zone, where_left, date, description, photo_url, status, user_id, user_name, created_at";
+  "id, ref, type, category, location, zone, where_left, date, description, photo_url, photo_path, status, user_id, user_name, created_at";
+
+// One hour. Long enough that a browse session never watches an image expire,
+// short enough that a URL copied out of devtools dies the same day — which is
+// the point, given some of these photos are of student ID cards.
+const SIGNED_URL_TTL_SECONDS = 3600;
+
+// Sign every distinct photo_path in one round trip and merge the results onto
+// the rows. Called before setItems so cards render already-signed and never
+// flash a placeholder.
+//
+// Falls through silently on error: photo_signed_url stays undefined and the
+// card shows its category-icon placeholder. A broken signing call should cost
+// the photo, not the board.
+async function withSignedPhotos(
+  supabase: ReturnType<typeof createClient>,
+  rows: Item[]
+): Promise<Item[]> {
+  const paths = Array.from(
+    new Set(rows.map((r) => r.photo_path).filter((p): p is string => !!p))
+  );
+  if (paths.length === 0) return rows;
+
+  const { data, error } = await supabase.storage
+    .from("item-photos")
+    .createSignedUrls(paths, SIGNED_URL_TTL_SECONDS);
+
+  if (error || !data) return rows;
+
+  const signed = new Map<string, string>();
+  for (const entry of data) {
+    // Per-path errors are reported inside the array, not thrown. A missing
+    // object leaves that one row unsigned rather than failing the page.
+    if (entry.path && entry.signedUrl) signed.set(entry.path, entry.signedUrl);
+  }
+
+  return rows.map((row) =>
+    row.photo_path
+      ? { ...row, photo_signed_url: signed.get(row.photo_path) }
+      : row
+  );
+}
 
 export interface UseItemsOptions {
   type?: ItemType;
@@ -79,7 +120,10 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
           return;
         }
 
-        setItems((data as Item[]) || []);
+        const signed = await withSignedPhotos(supabase, (data as Item[]) || []);
+        if (!isCurrent) return;
+
+        setItems(signed);
         setLoading(false);
       } catch {
         if (isCurrent) {
@@ -101,7 +145,7 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
           schema: "public",
           table: "items",
         },
-        (payload) => {
+        async (payload) => {
           if (!isCurrent) return;
 
           if (payload.eventType === "INSERT") {
@@ -113,10 +157,17 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
             const matchesLocation = location ? newItem.location === location : true;
 
             if (matchesType && matchesUser && matchesCategory && matchesLocation) {
-              setItems((prev) => [newItem, ...prev].slice(0, FETCH_LIMIT));
+              // Realtime delivers the row, not a signed URL, so a photo posted
+              // while the board is open needs signing like a fetched one.
+              const [signedItem] = await withSignedPhotos(supabase, [newItem]);
+              if (!isCurrent) return;
+              setItems((prev) => [signedItem, ...prev].slice(0, FETCH_LIMIT));
             }
           } else if (payload.eventType === "UPDATE") {
-            const updated = payload.new as Item;
+            const [updated] = await withSignedPhotos(supabase, [
+              payload.new as Item,
+            ]);
+            if (!isCurrent) return;
             setItems((prev) =>
               prev.map((item) => (item.id === updated.id ? updated : item))
             );
@@ -185,7 +236,9 @@ export function useItem(itemId: string | null) {
         setError("Item not found");
         setItem(null);
       } else {
-        setItem(data as Item);
+        const [signed] = await withSignedPhotos(supabase, [data as Item]);
+        if (!isCurrent) return;
+        setItem(signed);
       }
       setLoading(false);
     }
@@ -203,10 +256,14 @@ export function useItem(itemId: string | null) {
           table: "items",
           filter: `id=eq.${itemId}`,
         },
-        (payload) => {
+        async (payload) => {
           if (!isCurrent) return;
           if (payload.eventType === "UPDATE") {
-            setItem(payload.new as Item);
+            const [signed] = await withSignedPhotos(supabase, [
+              payload.new as Item,
+            ]);
+            if (!isCurrent) return;
+            setItem(signed);
           } else if (payload.eventType === "DELETE") {
             setItem(null);
             setError("Item was deleted");

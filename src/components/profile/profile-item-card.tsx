@@ -39,9 +39,9 @@ export function ProfileItemCard({
     >
       {/* Photo */}
       <div className="aspect-video relative bg-[var(--background)]">
-        {item.photo_url ? (
+        {item.photo_signed_url ? (
           <Image
-            src={item.photo_url}
+            src={item.photo_signed_url}
             alt={label}
             fill
             className="object-cover"

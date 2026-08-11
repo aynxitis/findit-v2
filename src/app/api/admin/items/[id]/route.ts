@@ -107,24 +107,21 @@ export async function DELETE(
 
     const supabase = createServiceClient();
 
-    // Fetch item first to get photo_url for storage cleanup
+    // Fetch item first to get photo_path for storage cleanup
     const { data: item } = await supabase
       .from("items")
-      .select("photo_url")
+      .select("photo_path")
       .eq("id", id)
       .single();
 
-    // Clean up photo from storage if present
-    if (item?.photo_url) {
-      const marker = "/object/public/item-photos/";
-      const idx = item.photo_url.indexOf(marker);
-      if (idx !== -1) {
-        const storagePath = item.photo_url.substring(idx + marker.length);
-        await supabase.storage
-          .from("item-photos")
-          .remove([storagePath])
-          .catch((err: unknown) => console.warn("[admin/items DELETE] storage cleanup failed:", err));
-      }
+    // Clean up photo from storage if present. Read the stored path rather than
+    // slicing it back out of photo_url: the URL percent-encodes names, and a
+    // private bucket would not carry the public marker at all.
+    if (item?.photo_path) {
+      await supabase.storage
+        .from("item-photos")
+        .remove([item.photo_path])
+        .catch((err: unknown) => console.warn("[admin/items DELETE] storage cleanup failed:", err));
     }
 
     const { error: deleteError } = await supabase

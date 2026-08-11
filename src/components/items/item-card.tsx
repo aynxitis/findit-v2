@@ -72,10 +72,10 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       style={{ animationDelay: `${index * 0.04}s` }}
     >
       {/* Photo or Placeholder */}
-      {item.photo_url ? (
+      {item.photo_signed_url ? (
         <div className="item-photo-wrapper">
           <Image
-            src={item.photo_url}
+            src={item.photo_signed_url}
             alt={categoryLabel}
             fill
             className="item-photo"
@@ -144,7 +144,7 @@ export const ItemCard = memo(ItemCardComponent, (prevProps, nextProps) => {
     prevProps.item.id === nextProps.item.id &&
     prevProps.item.status === nextProps.item.status &&
     prevProps.item.description === nextProps.item.description &&
-    prevProps.item.photo_url === nextProps.item.photo_url &&
+    prevProps.item.photo_signed_url === nextProps.item.photo_signed_url &&
     prevProps.item.category === nextProps.item.category &&
     prevProps.item.location === nextProps.item.location &&
     prevProps.item.date === nextProps.item.date &&
