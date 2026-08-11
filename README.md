@@ -143,6 +143,24 @@ This is a moderation gap, not an injection one, and the distinction matters:
 Deciding what to do about it — an allowlist, a report button, admin review, or
 dropping the free-text option — is a product call that has not been made.
 
+**The report form still collects `zone`, and nothing student-facing reads it.**
+Every student picks a zone, it is stored on every row and validated in two API
+routes, but exactly one surface reads it back: the admin item modal. It is not
+used by browse filters, cards, search, sorting or grouping.
+
+It has not been removed, because it cannot be removed on its own. `zone` is the
+first step of a two-step location picker: `getLocationValue()` can only produce
+a location from `formData.spot`, which is settable only from the picker that
+`zone` gates. Drop the field and `location` is permanently `null`, validation
+rejects it, and the form stops accepting submissions.
+
+Flattening the picker into a single location list is the fix, and it is a UX
+change rather than a mechanical one. Two notes for whoever does it: location
+slugs are globally unique, so `zone` carries no data-level information and the
+column can eventually go; but the chip labels collide — `foyer` and `res_foyer`
+both render as "Foyer" — so a flat list must use the full labels
+("Foyer (école)" / "Foyer (résidence)"), not the short ones.
+
 ---
 
 ## Branch Structure
