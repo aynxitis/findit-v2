@@ -14,6 +14,10 @@ export type ItemStatus = "open" | "claimed";
 
 export interface Item {
   id: string;
+  // Short sequential number a student can say out loud, type into search and
+  // quote in a claim. Server-generated (GENERATED ALWAYS as of migration 013),
+  // so it exists on every stored row but not on one being created.
+  ref: number;
   type: ItemType;
   category: ItemCategory;
   location: string;

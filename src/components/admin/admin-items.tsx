@@ -77,6 +77,7 @@ export function AdminItems() {
       if (filterSearch) {
         const q = filterSearch.toLowerCase();
         const searchable = [
+          String(item.ref), `#${item.ref}`,
           item.description, item.user_email, item.user_name,
           item.user_id, item.id,
           CATEGORY_LABELS[item.category], LOCATION_LABELS[item.location],

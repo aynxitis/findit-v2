@@ -165,6 +165,8 @@ export function AdminItemModal({
 
         <h2 className="font-display text-xl font-bold mb-5">
           {item ? t("adminModal.editTitle") : t("adminModal.addTitle")}
+          {/* Only on edit: a row being created has no ref until it is inserted. */}
+          {item && <span className="text-[var(--muted)]"> #{item.ref}</span>}
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

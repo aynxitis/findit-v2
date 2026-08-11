@@ -90,7 +90,12 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       <div className="item-body">
         <div className="item-meta">
           <span className={cn("item-type-badge", badgeClass)}>{badgeText}</span>
-          <span className="item-date">{dateStr}</span>
+          {/* Grouped so item-meta keeps exactly two flex children and its
+              justify-between layout is unchanged: badge left, date rightmost. */}
+          <div className="flex items-center gap-2">
+            <span className="item-date">#{item.ref}</span>
+            <span className="item-date">{dateStr}</span>
+          </div>
         </div>
         <div className="item-category">
           {categoryIcon} {categoryLabel}

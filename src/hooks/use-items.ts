@@ -12,7 +12,7 @@ const FETCH_LIMIT = 100;
 // user_email is deliberately absent: it is unreadable by `authenticated` and
 // reaches a claimer only through claim_item()'s return value.
 const ITEM_COLUMNS =
-  "id, type, category, location, zone, where_left, date, description, photo_url, status, user_id, user_name, created_at";
+  "id, ref, type, category, location, zone, where_left, date, description, photo_url, status, user_id, user_name, created_at";
 
 export interface UseItemsOptions {
   type?: ItemType;
@@ -140,6 +140,10 @@ export function useItems(options: UseItemsOptions = {}): UseItemsResult {
     const normalized = searchQuery.toLowerCase();
     return items.filter((item) => {
       const searchable = [
+        // Both forms, because the card renders "#142" and a student may type
+        // the hash back. Substring matching means "142" finds it either way.
+        String(item.ref),
+        `#${item.ref}`,
         item.category,
         CATEGORY_LABELS[item.category] || "",
         item.location,

@@ -140,7 +140,7 @@ export function ClaimModal({ item, open, onOpenChange, onClaimSuccess }: ClaimMo
         <div className="claim-modal-summary mt-4 p-4 rounded-lg bg-surface border border-border">
           <div className="text-xs uppercase tracking-wide text-muted mb-1">{t("claim.itemInfo")}</div>
           <div className="font-medium">
-            {categoryIcon} {categoryLabel} · {locationLabel} · {dateStr}
+            {categoryIcon} {categoryLabel} · {locationLabel} · {dateStr} · #{item.ref}
           </div>
           {item.description && (
             <div className="text-sm text-muted mt-1">{item.description}</div>
