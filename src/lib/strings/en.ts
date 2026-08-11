@@ -392,6 +392,8 @@ export const en = {
   "profile.error.resolve": "Failed to mark as resolved. Please try again.",
   "profile.error.delete": "Failed to delete item. Please try again.",
   "profile.unclaim.notFound": "This item no longer exists.",
+  "profile.resolve.notOwner": "You can only resolve your own posts.",
+  "profile.resolve.notOpen": "This item is no longer open.",
   "profile.unclaim.notOwner":
     "Only the person who posted this item can undo its claim.",
   "profile.unclaim.notClaimed": "This item is already back on the board.",
@@ -509,6 +511,7 @@ export const en = {
   "admin.action.edit": "Edit item",
   "admin.action.markClaimed": "Mark as claimed",
   "admin.action.markOpen": "Mark as open",
+  "admin.action.resolvedUseEdit": "Resolved — change status via Edit",
   "admin.action.deleteItem": "Delete item",
   "admin.action.banUser": "Ban user",
   "admin.action.unbanUser": "Unban user",

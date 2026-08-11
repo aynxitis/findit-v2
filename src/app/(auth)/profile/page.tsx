@@ -37,24 +37,46 @@ export default function ProfilePage() {
     return {
       found: items.filter((i) => i.type === "found").length,
       lost: items.filter((i) => i.type === "lost").length,
-      claimed: items.filter((i) => i.status === "claimed").length,
+      // "Items resolved" is about outcomes, not mechanism: an item someone else
+      // claimed is resolved from the poster's point of view, and so is one they
+      // closed themselves. Counting 'claimed' alone made the number go DOWN
+      // when a poster resolved their own listing.
+      claimed: items.filter(
+        (i) => i.status === "claimed" || i.status === "resolved"
+      ).length,
     };
   }, [items]);
 
-  // Resolve item
+  // The poster closes their own listing. Owner-only, enforced inside the RPC.
+  //
+  // Was a direct UPDATE setting status='claimed'. That was wrong three times
+  // over: 'claimed' means a claims row exists and none was written, so status
+  // and the claims table disagreed; migration 012 revoked the column grant, so
+  // the write could only fail; and 011 added 'resolved' precisely to say
+  // "the poster closed this" without asserting a reunion that never happened.
   const handleResolve = async (item: Item) => {
     setResolvingId(item.id);
     setActionError(null);
     try {
-      const { error } = await supabase
-        .from("items")
-        .update({ status: "claimed" })
-        .eq("id", item.id)
-        .eq("user_id", user!.id);
+      const { data, error } = await supabase.rpc("resolve_item", {
+        p_item_id: item.id,
+      });
 
       if (error) throw error;
-    } catch {
-      setActionError(t("profile.error.resolve"));
+
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        const messages: Record<string, string> = {
+          ITEM_NOT_FOUND: t("profile.unclaim.notFound"),
+          NOT_OWNER: t("profile.resolve.notOwner"),
+          NOT_OPEN: t("profile.resolve.notOpen"),
+        };
+        throw new Error(messages[result.error || ""] || t("profile.error.resolve"));
+      }
+    } catch (err) {
+      setActionError(
+        err instanceof Error ? err.message : t("profile.error.resolve")
+      );
     } finally {
       setResolvingId(null);
     }

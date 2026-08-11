@@ -135,6 +135,11 @@ export function AdminItems() {
   }
 
   async function handleStatusToggle(item: Item) {
+    // Two-state toggle over a three-state enum. Before this guard a resolved
+    // item fell into the else branch and was silently reopened, discarding a
+    // resolution no RPC can restore. Changing a resolved item goes through the
+    // edit modal's status select, which lists all three.
+    if (item.status === "resolved") return;
     const newStatus = item.status === "open" ? "claimed" : "open";
     setActionLoading(`status-${item.id}`);
     try {
@@ -352,8 +357,9 @@ export function AdminItems() {
                             className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface)] rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                             <Pencil size={14} />
                           </button>
-                          <button onClick={() => handleStatusToggle(item)} disabled={actionLoading === `status-${item.id}`}
-                            title={item.status === "open" ? t("admin.action.markClaimed") : t("admin.action.markOpen")}
+                          <button onClick={() => handleStatusToggle(item)}
+                            disabled={actionLoading === `status-${item.id}` || item.status === "resolved"}
+                            title={item.status === "resolved" ? t("admin.action.resolvedUseEdit") : item.status === "open" ? t("admin.action.markClaimed") : t("admin.action.markOpen")}
                             className="p-2 text-yellow hover:bg-yellow/10 rounded-lg disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">
                             {item.status === "open" ? <ToggleLeft size={14} /> : <ToggleRight size={14} />}
                           </button>
