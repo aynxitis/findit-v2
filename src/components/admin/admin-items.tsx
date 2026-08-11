@@ -336,7 +336,7 @@ export function AdminItems() {
                         {LOCATION_LABELS[item.location] ?? item.location}
                       </td>
                       <td className="py-3 px-2">
-                        <span className={`px-2 py-1 rounded-full text-xs ${item.status === "claimed" ? "bg-yellow/20 text-yellow" : "bg-[var(--surface)] border border-[var(--border)]"}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${item.status === "claimed" || item.status === "resolved" ? "bg-yellow/20 text-yellow" : "bg-[var(--surface)] border border-[var(--border)]"}`}>
                           {item.status}
                         </span>
                       </td>

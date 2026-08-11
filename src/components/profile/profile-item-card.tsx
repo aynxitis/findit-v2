@@ -29,12 +29,15 @@ export function ProfileItemCard({
   const location = LOCATION_LABELS[item.location] || item.location;
   const date = formatTimestamp(item.created_at);
   const isClaimed = item.status === "claimed";
+  const isResolved = item.status === "resolved";
+  // Both are terminal, and both dim. Only the label and the actions differ.
+  const isSettled = isClaimed || isResolved;
 
   return (
     <div
       className={cn(
         "bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden",
-        isClaimed && "opacity-60"
+        isSettled && "opacity-60"
       )}
     >
       {/* Photo */}
@@ -58,7 +61,7 @@ export function ProfileItemCard({
           <span
             className={cn(
               "px-2 py-1 rounded-full text-xs font-semibold",
-              isClaimed
+              isSettled
                 ? "bg-[var(--muted)] text-[var(--background)]"
                 : item.type === "found"
                 ? "bg-teal text-black"
@@ -66,6 +69,8 @@ export function ProfileItemCard({
             )}
           >
             {isClaimed
+              ? t("profileCard.badge.claimed")
+              : isResolved
               ? t("profileCard.badge.resolved")
               : item.type === "found"
               ? t("profileCard.badge.found")
@@ -106,6 +111,10 @@ export function ProfileItemCard({
             >
               {unclaiming ? t("common.loadingShort") : t("profileCard.undoClaim")}
             </button>
+          ) : isResolved ? (
+            // Nothing to offer: resolve_item() rejects an already-resolved item
+            // with NOT_OPEN, and there is no unresolve RPC. Delete remains.
+            null
           ) : (
             <button
               onClick={onResolve}

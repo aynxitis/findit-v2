@@ -21,7 +21,7 @@ interface ModalFormState {
   date: string;
   description: string;
   photo_url: string;
-  status: "open" | "claimed";
+  status: "open" | "claimed" | "resolved";
   user_id: string;
   user_name: string;
   user_email: string;
@@ -36,7 +36,7 @@ export interface AdminItemSaveData {
   date: string;
   description: string | null;
   photo_url: string | null;
-  status: "open" | "claimed";
+  status: "open" | "claimed" | "resolved";
   user_id: string;
   user_name: string | null;
   user_email: string | null;
@@ -181,9 +181,13 @@ export function AdminItemModal({
             </label>
             <label className="flex flex-col gap-1">
               <span className="font-display text-xs font-bold text-[var(--muted)] uppercase tracking-wide">{t("adminModal.field.status")}</span>
-              <select value={form.status} onChange={(e) => set("status", e.target.value as "open" | "claimed")} className={selectCls}>
+              {/* 'resolved' must be listed: without it the select falls back to
+                  the first option, so opening a resolved item and saving would
+                  silently rewrite its status to open. */}
+              <select value={form.status} onChange={(e) => set("status", e.target.value as ModalFormState["status"])} className={selectCls}>
                 <option value="open">{t("adminModal.opt.open")}</option>
                 <option value="claimed">{t("adminModal.opt.claimed")}</option>
+                <option value="resolved">{t("adminModal.opt.resolved")}</option>
               </select>
             </label>
           </div>

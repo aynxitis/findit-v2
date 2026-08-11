@@ -24,6 +24,10 @@ function isExpired(item: Item): boolean {
 function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCardProps) {
   const expired = isExpired(item);
   const isClaimed = item.status === "claimed";
+  const isResolved = item.status === "resolved";
+  // Both are terminal: the item is off the board either way, and gets the same
+  // dimming. Only the label distinguishes them.
+  const isSettled = isClaimed || isResolved;
   const isOwnPost = currentUserId && item.user_id === currentUserId;
 
   const dateStr = item.date
@@ -43,6 +47,10 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
   if (isClaimed) {
     badgeClass = "badge-claimed";
     badgeText = t("itemCard.badge.claimed");
+  } else if (isResolved) {
+    // Same class as claimed, verbatim. Only the text differs.
+    badgeClass = "badge-claimed";
+    badgeText = t("itemCard.badge.resolved");
   } else if (expired) {
     badgeClass = "badge-expired";
     badgeText = t("itemCard.badge.expired");
@@ -54,7 +62,7 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
     badgeText = t("itemCard.badge.lost");
   }
 
-  const canClaim = !isClaimed && !isOwnPost && !expired;
+  const canClaim = !isSettled && !isOwnPost && !expired;
 
   const handleClaimClick = () => {
     if (canClaim && onClaim) {
@@ -67,7 +75,7 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
       className={cn(
         "item-card",
         `type-${item.type}`,
-        isClaimed && "status-claimed"
+        isSettled && "status-claimed"
       )}
       style={{ animationDelay: `${index * 0.04}s` }}
     >
@@ -116,6 +124,10 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
         {isClaimed ? (
           <button className="btn-claimed-disabled" disabled>
             {t("itemCard.action.alreadyClaimed")}
+          </button>
+        ) : isResolved ? (
+          <button className="btn-claimed-disabled" disabled>
+            {t("itemCard.action.alreadyResolved")}
           </button>
         ) : isOwnPost ? (
           <button className="btn-claimed-disabled" disabled>

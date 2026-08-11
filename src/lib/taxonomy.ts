@@ -136,10 +136,15 @@ export const WHERE_LEFT_LABELS = bySlug(WHERE_LEFT, (w) => w.label);
 export const VALID_TYPES: string[] = ["found", "lost"];
 
 /**
- * Deliberately excludes 'resolved', which the item_status enum has held since
- * migration 011. Adding it here is P2-3's job, not this deduplication's.
+ * Mirrors the item_status enum. Per migration 011 these are three distinct
+ * facts: 'claimed' means a claims row exists — another student claimed it —
+ * while 'resolved' means the poster closed their own listing. Do not collapse
+ * them.
+ *
+ * Both admin API routes derive their zod validation from this array, so a value
+ * missing here is rejected server-side, not just unrenderable.
  */
-export const VALID_STATUSES: string[] = ["open", "claimed"];
+export const VALID_STATUSES: string[] = ["open", "claimed", "resolved"];
 export const VALID_CATEGORIES: string[] = CATEGORIES.map((c) => c.slug);
 export const VALID_ZONES: string[] = ZONES.map((z) => z.slug);
 export const VALID_WHERE_LEFT: string[] = WHERE_LEFT.map((w) => w.slug);

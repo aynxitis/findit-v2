@@ -10,7 +10,10 @@ import type {
 export type { ItemCategory, ItemZone, ItemWhereLeft, KnownLocation };
 
 export type ItemType = "found" | "lost";
-export type ItemStatus = "open" | "claimed";
+// 'claimed' = a claims row exists, i.e. another student claimed it.
+// 'resolved' = the poster closed their own listing. Migration 011 keeps these
+// apart deliberately; they are not interchangeable.
+export type ItemStatus = "open" | "claimed" | "resolved";
 
 export interface Item {
   id: string;

@@ -104,10 +104,12 @@ export const en = {
 
   // ── Item card ──────────────────────────────────────────────────────────────
   "itemCard.badge.claimed": "Claimed",
+  "itemCard.badge.resolved": "Resolved",
   "itemCard.badge.expired": "Expired",
   "itemCard.badge.found": "Found",
   "itemCard.badge.lost": "Lost",
   "itemCard.action.alreadyClaimed": "Already claimed",
+  "itemCard.action.alreadyResolved": "Already resolved",
   "itemCard.action.ownPost": "Your post",
   "itemCard.action.expired": "Post expired",
   "itemCard.action.claimFound": "This is mine",
@@ -331,6 +333,10 @@ export const en = {
   "profile.stats.found": "Found posts",
   "profile.stats.lost": "Lost reports",
   "profile.stats.resolved": "Items resolved",
+  // "Claimed" corrected from "Resolved" in P2-3. This badge renders
+  // status === 'claimed', which migration 011 defines as another student having
+  // claimed the item — a different fact from the poster resolving it.
+  "profileCard.badge.claimed": "Claimed",
   "profileCard.badge.resolved": "Resolved",
   "profileCard.badge.found": "Found",
   "profileCard.badge.lost": "Lost",
@@ -538,6 +544,7 @@ export const en = {
   "adminModal.opt.lost": "Lost",
   "adminModal.opt.open": "Open",
   "adminModal.opt.claimed": "Claimed",
+  "adminModal.opt.resolved": "Resolved",
   "adminModal.placeholder.description": "Optional description\u2026",
   "adminModal.placeholder.photoUrl": "https://\u2026",
   "adminModal.placeholder.userId": "Supabase User UUID",
