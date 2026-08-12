@@ -8,7 +8,12 @@ interface Stats {
   reunions: number;
 }
 
-export function StatsSection() {
+interface StatsSectionProps {
+  /** Fetched server-side in the landing page RSC. Null if the RPC failed. */
+  signups: number | null;
+}
+
+export function StatsSection({ signups }: StatsSectionProps) {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -36,7 +41,7 @@ export function StatsSection() {
   return (
     <div className="relative z-5 flex gap-8 justify-center flex-wrap px-6 pt-14 animate-fade-up [animation-delay:550ms]">
       <Stat value={stats?.posted} label={t("home.stats.posted")} />
-      <Stat value={stats?.reunions} label={t("home.stats.reunions")} />
+      <Stat value={signups ?? undefined} label={t("home.stats.signups")} />
       <Stat value="∞" label={t("home.stats.emails")} />
     </div>
   );

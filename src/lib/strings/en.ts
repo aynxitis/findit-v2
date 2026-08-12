@@ -47,7 +47,7 @@ export const en = {
 
   // ── Home ───────────────────────────────────────────────────────────────────
   "home.stats.posted": "Items posted so far",
-  "home.stats.reunions": "Successful reunions",
+  "home.stats.signups": "Students signed up",
   "home.stats.emails": "Emails saved",
 
   "home.strip.tagline": "Stop the email spam. Find your stuff.",

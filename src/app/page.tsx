@@ -5,9 +5,22 @@ import { AuthNotice } from "@/components/home/auth-notice";
 import { StatsSection } from "@/components/home/stats-section";
 import { ScrollingStrip } from "@/components/home/scrolling-strip";
 import { t } from "@/lib/strings";
+import { createAnonServerClient } from "@/lib/supabase/server";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
 
-export default function Home() {
+// The signup figure is fetched at render, not at build. Hourly is frequent
+// enough for a number that moves a few times a week, and it keeps the page
+// static between revalidations.
+export const revalidate = 3600;
+
+export default async function Home() {
+  // Null on failure rather than a throw: the tile falls back to the same
+  // em-dash the other counters show before their fetch resolves, so a missing
+  // RPC degrades one number instead of taking down the landing page.
+  const supabase = createAnonServerClient();
+  const { data, error } = await supabase.rpc("get_signup_count");
+  const signups = error || typeof data !== "number" ? null : data;
+
   return (
     <>
       <BackgroundBlobs />
@@ -95,7 +108,7 @@ export default function Home() {
         </div>
 
         {/* Stats */}
-        <StatsSection />
+        <StatsSection signups={signups} />
 
         {/* Divider */}
         <Divider />
