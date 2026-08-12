@@ -96,14 +96,20 @@ function ItemCardComponent({ item, currentUserId, onClaim, index = 0 }: ItemCard
 
       {/* Body */}
       <div className="item-body">
-        <div className="item-meta">
-          <span className={cn("item-type-badge", badgeClass)}>{badgeText}</span>
-          {/* Grouped so item-meta keeps exactly two flex children and its
-              justify-between layout is unchanged: badge left, date rightmost. */}
-          <div className="flex items-center gap-2">
-            <span className="item-date">#{item.ref}</span>
-            <span className="item-date">{dateStr}</span>
-          </div>
+        {/* Three equal columns, so the ref lands on the card's true horizontal
+            centre rather than at the midpoint of whatever space the badge and
+            date leave over. justify-self is required on all three: grid
+            blockifies these spans and stretches them to fill their column by
+            default, which would smear the badge pill across a third of the row.
+            Replaces .item-meta, whose declarations were flex/items-center/
+            justify-between/gap-2 -- layout only, all of it reproduced or
+            deliberately superseded here. */}
+        <div className="grid grid-cols-3 items-center gap-2">
+          <span className={cn("item-type-badge justify-self-start", badgeClass)}>
+            {badgeText}
+          </span>
+          <span className="item-date justify-self-center">#{item.ref}</span>
+          <span className="item-date justify-self-end">{dateStr}</span>
         </div>
         <div className="item-category">
           {categoryIcon} {categoryLabel}
