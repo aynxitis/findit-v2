@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
+import { Syne, Inter } from "next/font/google";
 import { AuthProvider } from "@/components/auth";
 import { SITE_URL } from "@/lib/constants/config";
 import "./globals.css";
@@ -10,10 +10,10 @@ const syne = Syne({
   weight: ["700", "800"],
 });
 
-const dmSans = DM_Sans({
+const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -120,7 +120,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${syne.variable} ${dmSans.variable}`}
+      className={`${syne.variable} ${inter.variable}`}
       data-theme="dark"
     >
       <body className="min-h-screen flex flex-col antialiased">
