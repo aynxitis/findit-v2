@@ -21,12 +21,6 @@ export default function Home() {
 
         {/* Hero Section */}
         <section className="relative z-5 flex flex-col items-center text-center px-6 py-16 gap-5">
-          {/* Live badge */}
-          <div className="badge animate-fade-up">
-            <span className="badge-dot" />
-            {t("home.badge")}
-          </div>
-
           {/* Headline */}
           <h1 className="font-display text-[clamp(2.4rem,8vw,6rem)] font-extrabold leading-[1.05] tracking-[-2px] max-w-[800px] animate-fade-up [animation-delay:100ms]">
             {t("home.hero.line1")}

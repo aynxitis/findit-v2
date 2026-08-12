@@ -276,7 +276,6 @@ export const en = {
   "terms.contact.a": "Questions or concerns? Reach out at",
 
   // ── Home ───────────────────────────────────────────────────────────────────
-  "home.badge": "Live on campus \u00b7 Free to use",
   "home.hero.line1": "Stop the",
   "home.hero.line2a": "email",
   "home.hero.line2b": "spam.",
