@@ -63,7 +63,7 @@ export const en = {
   "nav.logoAlt": "FINDit",
   "nav.notifications": "Notifications",
 
-  "footer.made": "Made with \u2665 by a student, for students \u00b7 FINDit Campus Lost & Found",
+  "footer.made": "Made with \u2665 by students, for students \u00b7 FINDit Campus Lost & Found",
   "footer.privacy": "Privacy Policy",
   "footer.terms": "Terms of Service",
   "footer.rights": "Anis Belamri \u00b7 All rights reserved",
