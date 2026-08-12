@@ -60,7 +60,7 @@ export function ProfileItemCard({
         <div className="absolute top-3 left-3 flex gap-2">
           <span
             className={cn(
-              "px-2 py-1 rounded-full text-xs font-semibold",
+              "px-2 py-1 rounded-full text-xs font-semibold font-display",
               isSettled
                 ? "bg-[var(--muted)] text-[var(--background)]"
                 : item.type === "found"
@@ -77,7 +77,7 @@ export function ProfileItemCard({
               : t("profileCard.badge.lost")}
           </span>
         </div>
-        <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-xs">
+        <span className="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/50 text-white text-xs font-display">
           {date}
         </span>
       </div>
@@ -99,7 +99,7 @@ export function ProfileItemCard({
         <div className="flex gap-2 mt-4">
           <button
             onClick={onDelete}
-            className="py-2 px-4 rounded-xl bg-red text-white text-sm font-semibold font-display hover:bg-red/80 hover:-translate-y-0.5 cursor-pointer transition-all"
+            className="flex-1 py-2 rounded-xl bg-red text-white text-sm font-semibold font-display hover:bg-red/80 hover:-translate-y-0.5 cursor-pointer transition-all"
           >
             {t("profileCard.delete")}
           </button>
