@@ -307,7 +307,7 @@ export const en = {
   "home.builtBy.eyebrow": "Built by",
   "home.builtBy.nameA": "Mohamed Anis",
   "home.builtBy.nameB": "BELAMRI",
-  "home.builtBy.role": "1st Year CS Student \u00b7 ESTIN Bejaia",
+  "home.builtBy.role": "2nd Year CS Student \u00b7 ESTIN Bejaia",
   "home.social.github": "GitHub",
   "home.social.linkedin": "LinkedIn",
   "home.social.email": "Email",
