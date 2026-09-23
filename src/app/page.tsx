@@ -8,10 +8,10 @@ import { t } from "@/lib/strings";
 import { createAnonServerClient } from "@/lib/supabase/server";
 import { ArrowUpRight, Globe, Mail } from "lucide-react";
 
-// The signup figure is fetched at render, not at build. Hourly is frequent
-// enough for a number that moves a few times a week, and it keeps the page
-// static between revalidations.
-export const revalidate = 3600;
+// The signup figure is fetched at render, not at build. Refreshed every
+// 5 minutes: fresh enough during signup spikes, still static between
+// revalidations.
+export const revalidate = 300;
 
 export default async function Home() {
   // Null on failure rather than a throw: the tile falls back to the same
